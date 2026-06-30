@@ -42,12 +42,13 @@ class Actionneur:
             print(f"[{self.nom}] échec de connexion MQTT (code {reason_code})")
 
     def _on_message(self, client, userdata, msg):
-        texte = msg.payload.decode("utf-8")
+        commande = msg.payload.decode("utf-8")
+        self.appliquer(commande)
         # La commande peut être un JSON {"commande": "..."} ou une chaîne brute.
         try:
-            commande = json.loads(texte).get("commande", texte)
+            commande = json.loads(commande).get("commande", commande)
         except json.JSONDecodeError:
-            commande = texte.strip()
+            commande = commande.strip()
 
         ancien = self.etat
         self.etat = self.appliquer(commande)
@@ -55,8 +56,9 @@ class Actionneur:
         self._publier_etat()
 
     def _publier_etat(self):
-        #TODO: Publier l'état courant sur le sujet MQTT self.sujet_etat. Le message doit être un JSON {"etat": "..."}.
-        pass
+        #*DONE: Publier l'état courant sur le sujet MQTT self.sujet_etat. Le message doit être un JSON {"etat": "..."}.
+        message = json.dumps({"etat": self.etat})
+        self.client.publish(self.sujet_etat, message)
 
     def demarrer(self):
         self.client.connect(config.MQTT_HOST, config.MQTT_PORT)

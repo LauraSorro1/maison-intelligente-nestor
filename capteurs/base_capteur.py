@@ -48,7 +48,11 @@ class Capteur:
         print(f"[{self.type_capteur}] démarré → {self.sujet} (Ctrl+C pour arrêter).")
         try:
             while True:
-                #TODO: simuler la lecture du capteur et publier le message JSON sur le sujet MQTT à un interval de temps défini par self.periode
+                #*DONE: simuler la lecture du capteur et publier le message JSON sur le sujet MQTT à un interval de temps défini par self.periode
+                valeur = self.lire()
+                message = json.dumps(self.construire_message(valeur))
+                self.client.publish(self.sujet, message)
+                time.sleep(self.periode)
                 pass
         except KeyboardInterrupt:
             print(f"\n[{self.type_capteur}] arrêté.")

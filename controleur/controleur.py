@@ -46,6 +46,14 @@ class Controleur:
         if reason_code == 0:
             print(f"Contrôleur connecté au courtier {config.MQTT_HOST}:{config.MQTT_PORT}")
             # TODO: abonnez-vous à chaque sujet capteur (voir config.SujetsCapteurs)
+            client.subscribe(config.SujetsCapteurs.SALON_TEMPERATURE.value)
+            client.subscribe(config.SujetsCapteurs.SALON_LUMINOSITE.value)
+            client.subscribe(config.SujetsCapteurs.CHAMBRE_TEMPERATURE.value)
+            client.subscribe(config.SujetsCapteurs.CHAMBRE_HUMIDITE.value)
+            client.subscribe(config.SujetsCapteurs.ENTREE_MOUVEMENT.value)
+            client.subscribe(config.SujetsCapteurs.ENTREE_PORTE.value)
+            client.subscribe(config.SujetsCapteurs.GARAGE_TEMPERATURE.value)
+            client.subscribe(config.SujetsCapteurs.GARAGE_VEHICULE.value)
         else:
             print(f"Échec de connexion MQTT (code {reason_code})")
 
@@ -95,12 +103,20 @@ class Controleur:
             print("RÈGLE: température revenue à la normale → l'alarme de l'aquarium s'arrête")
 
     def _publier_commande(self, sujet, commande):
-        #TODO: publier la commande sur le sujet actionneur
+        #*DONE: publier la commande sur le sujet actionneur
+        self.client.publish(sujet, json.dumps({"commande": commande}))
         pass
 
     def demarrer(self):
-        #TODO: connecter au courtier et lancer la boucle MQTT
-        pass
+        #*DONE: connecter au courtier et lancer la boucle MQTT
+        self.client.connect(config.MQTT_HOST, config.MQTT_PORT)
+        print("Contrôleur démarré (Ctrl+C pour arrêter).")
+        try:
+            self.client.loop_forever()
+        except KeyboardInterrupt:
+            print("\nContrôleur arrêté.")
+        finally:
+            self.client.disconnect()
 
 
 if __name__ == "__main__":
