@@ -21,8 +21,6 @@ INSÉREZ VOTRE DIAGRAMME D'ARCHITECTURE ICI
 ```
 projet1-420-315-E26/
 ├── config.py                Constantes : MQTT, DB, sujets, tables
-├── db.py                    Accès MariaDB (une table par capteur)
-├── schema.sql               Schéma des tables
 ├── requirements.txt
 ├── capteurs/                 Capteurs simulés — classes Python (package)
 │   ├── __init__.py
@@ -44,15 +42,13 @@ projet1-420-315-E26/
 
 - **Python 3.11+**
 - **Mosquitto** (courtier MQTT) en écoute sur `localhost:1883`
-- **MariaDB** en écoute sur `localhost:3306`
 - **Node-RED** + le module **node-red-dashboard** pour le tableau de bord
 
 Sur macOS (Homebrew) :
 
 ```bash
-brew install mosquitto mariadb mariadb-connector-c
+brew install mosquitto 
 brew services start mosquitto
-brew services start mariadb
 
 # Node-RED
 npm install -g node-red
@@ -78,21 +74,8 @@ npm install -g node-red
   `net start mosquitto`. Test rapide sans service :
   `& "C:\Program Files\mosquitto\mosquitto.exe" -v`.
 
-**2. MariaDB**
 
-- Télécharger le *MSI Package* : <https://mariadb.org/download/>
-- Pendant l'installation, **définir et noter le mot de passe root** (il remplace
-  le `-p` des commandes plus bas). MariaDB s'installe comme service qui démarre
-  automatiquement.
-- Pour utiliser la commande `mariadb` au terminal, ajouter son dossier `bin` au
-  PATH (adapter le numéro de version) :
-
-  ```powershell
-  $env:Path += ";C:\Program Files\MariaDB 11.4\bin"
-  mariadb --version
-  ```
-
-**4. Node-RED**
+**2. Node-RED**
 
 - Installer d'abord **Node.js (LTS)** : <https://nodejs.org/> 
 - Dans un nouveau terminal :
@@ -119,14 +102,6 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 
-# Base de données : créer les tables (une par capteur)
-mariadb -u root -p < schema.sql
-
-# Créer l'utilisateur applicatif (une seule fois)
-mariadb -u root -p -e "CREATE USER IF NOT EXISTS 'iot'@'localhost' IDENTIFIED BY 'iotpass'; \
-                       GRANT ALL ON station_iot.* TO 'iot'@'localhost'; FLUSH PRIVILEGES;"
-```
-
 ---
 
 ## Exécution
@@ -138,7 +113,7 @@ mariadb -u root -p -e "CREATE USER IF NOT EXISTS 'iot'@'localhost' IDENTIFIED BY
 
 ```bash
 
-# Terminal 1 — Contrôleur (abonné + publieur + journalisation MariaDB)
+# Terminal 1 — Contrôleur (abonné + publieur)
 python -m controleur.controleur
 
 # Terminal 2 — Actionneur aquarium (exemple)
@@ -177,14 +152,3 @@ Les tuiles se mettent à jour automatiquement à chaque nouvelle valeur publiée
 | `maison/salon/aquarium/temperature`| publier   | `{"type","valeur","unite","horodatage"}`    | Capteur température de l'aquarium  |
 | `maison/salon/aquarium/cmd`  | commande  | `{"commande":"sonne"\|"silence"}`           | Eteint ou allume l'alarme de l'aquarium   |
 | `maison/salon/aquarium/etat` | état      | `{"nom":"aquarium","etat":...}`             | État de l'alarme publié par l'actionneur|
-
-
----
-
-## Schéma MariaDB (une table par capteur)
-
-| Table                  | Capteur               | Colonnes principales              |
-|------------------------|-----------------------|-----------------------------------|
-| `lectures_temperature_aquarium` | température aquarium (salon) | `id`, `horodatage`, `valeur`, `unite` |
-
-(Ligne d'exemple ci-dessus — ajoutez-en une par capteur que vous créez.)

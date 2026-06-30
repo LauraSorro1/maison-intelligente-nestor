@@ -3,8 +3,7 @@
 Le contrôleur assume SIMULTANÉMENT les deux rôles du modèle
 publish-subscribe :
 
-  • ABONNÉ : il s'abonne à chaque sujet de capteur (voir
-    config.SujetsCapteurs) et journalise chaque lecture dans MariaDB
+  • ABONNÉ : il s'abonne à chaque sujet de capteur (voir config.SujetsCapteurs)
     (une table par capteur).
 
   • PUBLIEUR : il applique des règles d'automatisation et publie des
@@ -65,17 +64,19 @@ class Controleur:
             return
 
         # 1) Journaliser dans MariaDB (une table par capteur).
-        self._journaliser(type_capteur, valeur, unite, msg.topic)
+        # Comme discuté en classe, la journalisation est repoussée au projet 2. Vous pouvez décommenter la ligne ci-dessous quand vous aurez implémenté la fonction _journaliser().
+        # self._journaliser(type_capteur, valeur, unite, msg.topic)
 
         # 2) Appliquer les règles d'automatisation.
         if type_capteur == "temperature_aquarium":
             self._regle_temperature(valeur)
         # elif type_capteur == "...":     # ← ajoutez vos règles ici
 
-    def _journaliser(self, type_capteur, valeur, unite, sujet):
-        # TODO: insérer la lecture dans la table MariaDB correspondante au capteur.
-        #       Astuce : importez db et appelez db.inserer_lecture(type_capteur, valeur, unite).
-        pass
+    #  Comme discuté en classe, la journalisation est repoussée au projet 2
+    #def _journaliser(self, type_capteur, valeur, unite, sujet):
+    #     # TODO: insérer la lecture dans la table MariaDB correspondante au capteur.
+    #     #       Astuce : importez db et appelez db.inserer_lecture(type_capteur, valeur, unite).
+    #     pass
 
     # ----- Règle d'exemple : Température hors plage → actionneur + alerte -----
     def _regle_temperature(self, valeur):
