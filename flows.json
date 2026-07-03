@@ -1,0 +1,1413 @@
+[
+    {
+        "id": "c6e83d46f1f7d35e",
+        "type": "tab",
+        "label": "Flux",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f963c0bec8f8e280",
+        "type": "mqtt-broker",
+        "name": "mosquitto-local",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "Node-RED Dashboard",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "045e9c68aa740368",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "1fab1c46e971336b",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094CE",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "39a508d3615bc5f2",
+        "type": "ui-page",
+        "name": "Maison",
+        "ui": "045e9c68aa740368",
+        "path": "/page1",
+        "icon": "Maison",
+        "layout": "grid",
+        "theme": "1fab1c46e971336b",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "83519395dbfaccaa",
+        "type": "ui-group",
+        "name": "Salon",
+        "page": "39a508d3615bc5f2",
+        "width": 6,
+        "height": 1,
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "00c36254ecbd9fee",
+        "type": "ui-group",
+        "name": "Chambre",
+        "page": "39a508d3615bc5f2",
+        "width": 6,
+        "height": 1,
+        "order": 4,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "ab93200799983a0a",
+        "type": "ui-group",
+        "name": "Garage",
+        "page": "39a508d3615bc5f2",
+        "width": 6,
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "a4201dc16b913486",
+        "type": "ui-group",
+        "name": "Entrée",
+        "page": "39a508d3615bc5f2",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "2374f4411cc5761f",
+        "type": "ui-theme",
+        "name": "ui-base.label.theme 2",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094CE",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "df712ae0caac545f",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/salon/temperature",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "6eecea91ed44bc05"
+            ]
+        ]
+    },
+    {
+        "id": "6eecea91ed44bc05",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 240,
+        "wires": [
+            [
+                "8ec31767e6c4ced5"
+            ]
+        ]
+    },
+    {
+        "id": "8ec31767e6c4ced5",
+        "type": "ui-gauge",
+        "z": "c6e83d46f1f7d35e",
+        "name": "Température salon",
+        "group": "83519395dbfaccaa",
+        "order": 3,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Température salon",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "°C",
+        "icon": "",
+        "prefix": "",
+        "suffix": "°C",
+        "segments": [
+            {
+                "from": "18",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "23",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "26",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": "16",
+        "max": "26",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 810,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4ef747fb127fb07a",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/salon/luminosite",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 80,
+        "wires": [
+            [
+                "db05a839facfe825"
+            ]
+        ]
+    },
+    {
+        "id": "fc01998dda660bad",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/chambre/temperature",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 460,
+        "wires": [
+            [
+                "2e202e60bfd28453"
+            ]
+        ]
+    },
+    {
+        "id": "ce4af9cbc06366fe",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/chambre/humidite",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 540,
+        "wires": [
+            [
+                "560c3ba9da874b98"
+            ]
+        ]
+    },
+    {
+        "id": "70f1eadf46df62e3",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/entree/mouvement",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 780,
+        "wires": [
+            [
+                "8f2834b6b55349b9"
+            ]
+        ]
+    },
+    {
+        "id": "3e1de26e6163e2f2",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/entree/porte",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 130,
+        "y": 940,
+        "wires": [
+            [
+                "73c108a80cac1d45"
+            ]
+        ]
+    },
+    {
+        "id": "fe181bcfb0c39ea6",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/garage/temperature",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 1180,
+        "wires": [
+            [
+                "a9f4cdb018a54601"
+            ]
+        ]
+    },
+    {
+        "id": "e0c54ad002bc46c1",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/garage/vehicule",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 1340,
+        "wires": [
+            [
+                "2b23a0f4a077e4a4"
+            ]
+        ]
+    },
+    {
+        "id": "6eabb9f4ca914d68",
+        "type": "ui-gauge",
+        "z": "c6e83d46f1f7d35e",
+        "name": "Luminosité salon",
+        "group": "83519395dbfaccaa",
+        "order": 2,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Luminosité salon",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "lux",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "200",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "500",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "1000",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "1000",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 770,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ff109ef262d4a6e7",
+        "type": "ui-gauge",
+        "z": "c6e83d46f1f7d35e",
+        "name": "Température chambre",
+        "group": "00c36254ecbd9fee",
+        "order": 2,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Température chambre",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "°C",
+        "icon": "",
+        "prefix": "",
+        "suffix": "°C",
+        "segments": [
+            {
+                "from": "16",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "23",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "26",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": "14",
+        "max": "26",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 780,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "db05a839facfe825",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 80,
+        "wires": [
+            [
+                "6eabb9f4ca914d68"
+            ]
+        ]
+    },
+    {
+        "id": "2e202e60bfd28453",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 460,
+        "wires": [
+            [
+                "ff109ef262d4a6e7"
+            ]
+        ]
+    },
+    {
+        "id": "560c3ba9da874b98",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 540,
+        "wires": [
+            [
+                "cf73963a9d8bc2a0"
+            ]
+        ]
+    },
+    {
+        "id": "8f2834b6b55349b9",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 780,
+        "wires": [
+            [
+                "beb734df6538cbef"
+            ]
+        ]
+    },
+    {
+        "id": "73c108a80cac1d45",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 940,
+        "wires": [
+            [
+                "c1921d6378e1d364"
+            ]
+        ]
+    },
+    {
+        "id": "a9f4cdb018a54601",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 1180,
+        "wires": [
+            [
+                "da8490243c8fc39e"
+            ]
+        ]
+    },
+    {
+        "id": "2b23a0f4a077e4a4",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 1340,
+        "wires": [
+            [
+                "6cc04c577ce7d976"
+            ]
+        ]
+    },
+    {
+        "id": "cf73963a9d8bc2a0",
+        "type": "ui-gauge",
+        "z": "c6e83d46f1f7d35e",
+        "name": "Humidité chambre",
+        "group": "00c36254ecbd9fee",
+        "order": 1,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Humidité chambre",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "%",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "35",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "60",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "100",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": 0,
+        "max": "100",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 770,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "da8490243c8fc39e",
+        "type": "ui-gauge",
+        "z": "c6e83d46f1f7d35e",
+        "name": "Température garage",
+        "group": "ab93200799983a0a",
+        "order": 1,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Température garage",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "°C",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "7",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "15",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "20",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": "-10",
+        "max": "20",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 720,
+        "y": 1180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "beb734df6538cbef",
+        "type": "ui-text",
+        "z": "c6e83d46f1f7d35e",
+        "group": "a4201dc16b913486",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "Mouvement entrée",
+        "label": "Mouvement entrée",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 710,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "c1921d6378e1d364",
+        "type": "ui-text",
+        "z": "c6e83d46f1f7d35e",
+        "group": "a4201dc16b913486",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "État porte entrée",
+        "label": "État porte entrée",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 710,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "6cc04c577ce7d976",
+        "type": "ui-text",
+        "z": "c6e83d46f1f7d35e",
+        "group": "ab93200799983a0a",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "Véhicule garage",
+        "label": "Véhicule garage",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 720,
+        "y": 1340,
+        "wires": []
+    },
+    {
+        "id": "42d8807208d29460",
+        "type": "comment",
+        "z": "c6e83d46f1f7d35e",
+        "name": "=== SALON ===",
+        "info": "",
+        "x": 100,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "391bd73ffda8bd58",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/salon/lumiere/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 160,
+        "wires": [
+            [
+                "0812466a0ca2938b"
+            ]
+        ]
+    },
+    {
+        "id": "0812466a0ca2938b",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 160,
+        "wires": [
+            [
+                "a599bceded11d4e6"
+            ]
+        ]
+    },
+    {
+        "id": "a599bceded11d4e6",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "83519395dbfaccaa",
+        "name": "Lumière salon",
+        "label": "Lumière salon",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 780,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ebcee8ee8bc42828",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 320,
+        "wires": [
+            [
+                "42be8f58e08e1335"
+            ]
+        ]
+    },
+    {
+        "id": "e337ec2dc6923894",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/salon/thermopompe/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 320,
+        "wires": [
+            [
+                "ebcee8ee8bc42828"
+            ]
+        ]
+    },
+    {
+        "id": "42be8f58e08e1335",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "83519395dbfaccaa",
+        "name": "Thermopompe salon",
+        "label": "Thermopompe salon",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 820,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "684a5126bef60819",
+        "type": "comment",
+        "z": "c6e83d46f1f7d35e",
+        "name": "=== CHAMBRE ===",
+        "info": "",
+        "x": 130,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "dd806d6a77ce56ba",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/chambre/thermopompe/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 180,
+        "y": 620,
+        "wires": [
+            [
+                "4597770622366704"
+            ]
+        ]
+    },
+    {
+        "id": "4597770622366704",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 620,
+        "wires": [
+            [
+                "2a42057c4cda9635"
+            ]
+        ]
+    },
+    {
+        "id": "2a42057c4cda9635",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "00c36254ecbd9fee",
+        "name": "Thermopompe chambre",
+        "label": "Thermopompe chambre",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 770,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ad6d3cd82c1d6935",
+        "type": "comment",
+        "z": "c6e83d46f1f7d35e",
+        "name": "=== ENTRÉE ===",
+        "info": "",
+        "x": 130,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "2d2edc4bc102fed3",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/entree/lumiere/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 860,
+        "wires": [
+            [
+                "7ed4b7a55328d80b"
+            ]
+        ]
+    },
+    {
+        "id": "7ed4b7a55328d80b",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 860,
+        "wires": [
+            [
+                "659acbeaeb92ea98"
+            ]
+        ]
+    },
+    {
+        "id": "659acbeaeb92ea98",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "a4201dc16b913486",
+        "name": "Lumière entrée",
+        "label": "Lumière entrée",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 700,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "aefe1614c6db9288",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/entree/serrure/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 1020,
+        "wires": [
+            [
+                "0f9694716789b990"
+            ]
+        ]
+    },
+    {
+        "id": "0f9694716789b990",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 1020,
+        "wires": [
+            [
+                "e402be5a44e9e25a"
+            ]
+        ]
+    },
+    {
+        "id": "e402be5a44e9e25a",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "a4201dc16b913486",
+        "name": "Serrure entrée",
+        "label": "Serrure entrée",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 700,
+        "y": 1020,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cbdeac526fbb31d7",
+        "type": "comment",
+        "z": "c6e83d46f1f7d35e",
+        "name": "=== GARAGE ===",
+        "info": "",
+        "x": 130,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "b9935de38779940c",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/garage/chauffage/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 1260,
+        "wires": [
+            [
+                "0148818f4553a5fa"
+            ]
+        ]
+    },
+    {
+        "id": "0148818f4553a5fa",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 1260,
+        "wires": [
+            [
+                "9bc80799c2f22aa6"
+            ]
+        ]
+    },
+    {
+        "id": "9bc80799c2f22aa6",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "ab93200799983a0a",
+        "name": "Chauffage garage",
+        "label": "Chauffage garage",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 710,
+        "y": 1260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d4d1e7d4bce21dd0",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/garage/porte/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 1420,
+        "wires": [
+            [
+                "b896be9a695ef630"
+            ]
+        ]
+    },
+    {
+        "id": "b896be9a695ef630",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 1420,
+        "wires": [
+            [
+                "7b8738646c70feeb"
+            ]
+        ]
+    },
+    {
+        "id": "7b8738646c70feeb",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "ab93200799983a0a",
+        "name": "Porte garage",
+        "label": "Porte garage",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 690,
+        "y": 1420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "683da4e6d1957973",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "@flowfuse/node-red-dashboard": "1.30.2"
+        }
+    }
+]
