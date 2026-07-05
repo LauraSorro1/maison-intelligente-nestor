@@ -19,6 +19,7 @@ MQTT_PORT = 1883
 
 class SujetsCapteurs(StrEnum):
     SALON_AQUARIUM = "maison/salon/aquarium/temperature"
+    SALON_AQUARIUM_PH = "maison/salon/aquarium/ph"
 
 # --- Sujets MQTT des actionneurs (abonnés) ---
 # /cmd : le contrôleur publie une commande ; l'actionneur y est abonné.
