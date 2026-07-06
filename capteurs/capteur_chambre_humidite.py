@@ -6,9 +6,6 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m capteurs.capteur_chambre_humidite
 """
 import random
-
-import paho.mqtt.client as mqtt
-
 from config import SujetsCapteurs
 from capteurs.base_capteur import Capteur
 
@@ -20,8 +17,10 @@ class CapteurChambreHumidite(Capteur):
             sujet=SujetsCapteurs.CHAMBRE_HUMIDITE,
             unite="%",
             periode=2.0,
-            client=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, 
-            client_id="capteur-chambre-humidite")
+            client=Capteur.creer_client(
+                "capteur-chambre-humidite",
+                "maison/chambre/humidite/sante"
+            )
         )
         self.valeur = 45.0  # humidité confortable de départ
 

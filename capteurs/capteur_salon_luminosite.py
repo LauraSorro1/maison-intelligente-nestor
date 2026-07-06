@@ -6,9 +6,6 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m capteurs.capteur_salon_luminosite
 """
 import random
-
-import paho.mqtt.client as mqtt
-
 from config import SujetsCapteurs
 from capteurs.base_capteur import Capteur
 
@@ -20,8 +17,10 @@ class CapteurSalonLuminosite(Capteur):
             sujet=SujetsCapteurs.SALON_LUMINOSITE,
             unite="lux",
             periode=2.0,
-            client=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, 
-            client_id="capteur-salon-luminosite")
+            client=Capteur.creer_client(
+                "capteur-salon-luminosite",
+                "maison/salon/luminosite/sante"
+            )
         )
         self.valeur = 300.0  # valeur de départ - jour
 

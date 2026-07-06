@@ -35,7 +35,7 @@ class Actionneur:
     def _on_connect(self, client, userdata, flags, reason_code, properties):
         #paho-mqtt retourne un reason_code de 0 si la connection est réussie, sinon un code d'erreur.
         if reason_code == 0:
-            client.subscribe(self.sujet_cmd)
+            client.subscribe(self.sujet_cmd, qos=2)
             print(f"[{self.nom}] abonné à {self.sujet_cmd}")
             self._publier_etat()
         else:
@@ -43,8 +43,6 @@ class Actionneur:
 
     def _on_message(self, client, userdata, msg):
         commande = msg.payload.decode("utf-8")
-        self.appliquer(commande)
-        # La commande peut être un JSON {"commande": "..."} ou une chaîne brute.
         try:
             commande = json.loads(commande).get("commande", commande)
         except json.JSONDecodeError:
@@ -58,7 +56,7 @@ class Actionneur:
     def _publier_etat(self):
         #*DONE: Publier l'état courant sur le sujet MQTT self.sujet_etat. Le message doit être un JSON {"etat": "..."}.
         message = json.dumps({"etat": self.etat})
-        self.client.publish(self.sujet_etat, message)
+        self.client.publish(self.sujet_etat, message, qos=1, retain=True)
 
     def demarrer(self):
         self.client.connect(config.MQTT_HOST, config.MQTT_PORT)

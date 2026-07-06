@@ -6,9 +6,6 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m capteurs.capteur_entree_porte
 """
 import random
-
-import paho.mqtt.client as mqtt
-
 from config import SujetsCapteurs
 from capteurs.base_capteur import Capteur
 
@@ -20,8 +17,10 @@ class CapteurEntreePorte(Capteur):
             sujet=SujetsCapteurs.ENTREE_PORTE,
             unite="",
             periode=2.0,
-            client=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, 
-            client_id="capteur-entree-porte")
+            client=Capteur.creer_client(
+                "capteur-entree-porte",
+                "maison/entree/porte/sante"
+            )
         )
         self.valeur = "ferme"  # porte fermée au départ
 

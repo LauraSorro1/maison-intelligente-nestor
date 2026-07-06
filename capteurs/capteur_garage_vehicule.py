@@ -6,9 +6,6 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m capteurs.capteur_garage_vehicule
 """
 import random
-
-import paho.mqtt.client as mqtt
-
 from config import SujetsCapteurs
 from capteurs.base_capteur import Capteur
 
@@ -20,8 +17,10 @@ class CapteurGarageVehicule(Capteur):
             sujet=SujetsCapteurs.GARAGE_VEHICULE,
             unite="",
             periode=2.0,
-            client=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, 
-            client_id="capteur-garage-vehicule")
+            client=Capteur.creer_client(
+                "capteur-garage-vehicule",
+                "maison/garage/vehicule/sante"
+            )
         )
         self.valeur = 0  # pas de véhicule au départ
 

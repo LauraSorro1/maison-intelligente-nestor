@@ -6,9 +6,6 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m capteurs.capteur_chambre_temperature
 """
 import random
-
-import paho.mqtt.client as mqtt
-
 from config import SujetsCapteurs
 from capteurs.base_capteur import Capteur
 
@@ -20,8 +17,10 @@ class CapteurChambreTemperature(Capteur):
             sujet=SujetsCapteurs.CHAMBRE_TEMPERATURE,
             unite="C",
             periode=2.0,
-            client=mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, 
-            client_id="capteur-chambre-temperature")
+            client=Capteur.creer_client(
+                "capteur-chambre-temperature",
+                "maison/chambre/temperature/sante"
+            )
         )
         self.valeur = 19.0  # légèrement plus frais que le salon
 
