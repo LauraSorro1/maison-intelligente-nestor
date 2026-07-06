@@ -18,6 +18,7 @@ MQTT_PORT = 1883
 # Ajoutez vos propres sujets à l'enum quand vous créez de nouveaux capteurs.
 
 class SujetsCapteurs(StrEnum):
+# Mes capteurs
     SALON_TEMPERATURE = "maison/salon/temperature"
     SALON_LUMINOSITE = "maison/salon/luminosite"
     CHAMBRE_TEMPERATURE = "maison/chambre/temperature"
@@ -26,6 +27,9 @@ class SujetsCapteurs(StrEnum):
     ENTREE_PORTE = "maison/entree/porte"
     GARAGE_TEMPERATURE = "maison/garage/temperature"
     GARAGE_VEHICULE = "maison/garage/vehicule"
+# Capteurs de la prof :
+    SALON_AQUARIUM = "maison/salon/aquarium/temperature"
+    SALON_AQUARIUM_PH = "maison/salon/aquarium/ph"
 
 # --- Sujets MQTT des actionneurs (abonnés) ---
 # /cmd : le contrôleur publie une commande ; l'actionneur y est abonné.
@@ -55,6 +59,8 @@ class SujetsActionneurs(StrEnum):
 TABLES_CAPTEURS = {
     "temperature_salon": "lectures_temperature_salon",
     "luminosite_salon": "lectures_luminosite_salon",
+    "temperature_aquarium": "lectures_temperature_aquarium",
+    "ph_aquarium": "lectures_ph_aquarium",
     "temperature_chambre": "lectures_temperature_chambre",
     "humidite_chambre": "lectures_humidite_chambre",
     "mouvement_entree": "lectures_mouvement_entree",
