@@ -14,11 +14,10 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m controleur.controleur
 """
 import json
-
 import paho.mqtt.client as mqtt
-
 import config
-
+from datetime import datetime
+import time
 
 
 # Salon
@@ -34,6 +33,11 @@ CHAMBRE_TEMP_MAX = 23.0
 GARAGE_TEMP_MIN = 5.0
 GARAGE_TEMP_MAX = 7.0
 
+# Alertes
+SUJET_ALERTES = "maison/alertes"
+HEURE_NUIT_DEBUT = 23 # heures
+HEURE_NUIT_FIN = 5 # heures
+PORTE_OUVERTE_MAX = 30 # secondes
 
 class Controleur:
     def __init__(self):
@@ -51,6 +55,11 @@ class Controleur:
         self.entree_serrure_verrouillee = False
         self.garage_chauffage_allume = False
         self.garage_porte_ouverte = False
+
+        # Variables d'état.
+        self.entree_porte_ouverte_depuis = None # timestamp d'ouverture
+        self.alerte_porte_envoyee = False # pour éviter d'envoyer plusieurs alertes
+        self.alerte_temp_salon_envoyee = False
 
     # ----- Connexion / abonnement -----
     def _on_connect(self, client, userdata, flags, reason_code, properties):
@@ -99,6 +108,8 @@ class Controleur:
             self._regle_garage_temperature(valeur)
         elif type_capteur == "vehicule_garage":
             self._regle_garage_vehicule(valeur)
+        elif type_capteur == "porte_entree":
+            self._regle_entree_porte(valeur)
 
     #  Comme discuté en classe, la journalisation est repoussée au projet 2
     #def _journaliser(self, type_capteur, valeur, unite, sujet):
@@ -129,14 +140,21 @@ class Controleur:
             self._publier_commande(config.SujetsActionneurs.SALON_THERMOPOMPE_CMD, "chauffe")
             self.salon_thermopompe_etat = "chauffe"
             print(f"RÈGLE: température trop basse ({temp}°C) → thermopompe salon chauffe")
+            if not self.alerte_temp_salon_envoyee:
+                self._publier_alerte(f"température salon hors plage ({temp}°C)")
+                self.alerte_temp_salon_envoyee = True
         elif temp > SALON_TEMP_MAX and self.salon_thermopompe_etat!= "climatise":
             self._publier_commande(config.SujetsActionneurs.SALON_THERMOPOMPE_CMD, "climatise")
             self.salon_thermopompe_etat = "climatise"
             print(f"RÈGLE: température trop haute ({temp}°C) → thermopompe salon climatise")
+            if not self.alerte_temp_salon_envoyee:
+                self._publier_alerte(f"température salon hors plage ({temp}°C)")
+                self.alerte_temp_salon_envoyee = True
         elif SALON_TEMP_MIN <= temp <= SALON_TEMP_MAX and self.salon_thermopompe_etat != "arrete":
             self._publier_commande(config.SujetsActionneurs.SALON_THERMOPOMPE_CMD, "arrete")
             self.salon_thermopompe_etat = "arrete"
             print(f"RÈGLE: température dans la plage ({temp}°C) → thermopompe salon arrêtée")
+            self.alerte_temp_salon_envoyee = False # réinitialiser l'alerte pour la prochaine fois que la température sortira de la plage
 
     def _regle_chambre_temperature(self, valeur):
         try:
@@ -156,6 +174,19 @@ class Controleur:
             self.chambre_thermopompe_etat = "arrete"
             print(f"RÈGLE: température dans la plage ({temp}°C) → thermopompe chambre arrêtée")
 
+    def _regle_entree_porte(self, valeur):
+        if valeur == "ouvert":
+            if self.entree_porte_ouverte_depuis is None:
+                self.entree_porte_ouverte_depuis = time.time()
+                print("RÈGLE: porte entrée ouverte → surveillance démarrée")
+            elif time.time() - self.entree_porte_ouverte_depuis > 30 and not self.alerte_porte_envoyee:
+                self._publier_alerte("porte entrée ouverte trop longtemps")
+                self.alerte_porte_envoyee = True
+        elif valeur == "ferme":
+            self.entree_porte_ouverte_depuis = None
+            self.alerte_porte_envoyee = False
+            print("RÈGLE: porte entrée fermée → surveillance réinitialisée")
+
     def _regle_entree_mouvement(self, valeur):
         try:
             mouvement = int(valeur)
@@ -168,6 +199,10 @@ class Controleur:
             self._publier_commande(config.SujetsActionneurs.ENTREE_SERRURE_CMD, "verrouille")
             self.entree_serrure_verrouillee = True
             print(f"RÈGLE: mouvement détecté → serrure entrée verrouillée")
+            # alerte nocturne
+            heure = datetime.now().hour
+            if (heure >= HEURE_NUIT_DEBUT or heure < HEURE_NUIT_FIN):
+                self._publier_alerte("Mouvement détecté à l'entrée pendant la nuit")
         elif mouvement == 0 and self.entree_lumiere_allumee:
             self._publier_commande(config.SujetsActionneurs.ENTREE_LUMIERE_CMD, "eteint")
             self.entree_lumiere_allumee = False
@@ -199,6 +234,7 @@ class Controleur:
             self.garage_porte_ouverte = True
             self._publier_commande(config.SujetsActionneurs.GARAGE_PORTE_CMD, "ouvre")
             print(f"RÈGLE: véhicule détecté → porte garage ouverte")
+            self._publier_alerte("Véhicule détecté dans le garage")
         elif mouvement == 0 and self.garage_porte_ouverte:
             self.garage_porte_ouverte = False
             self._publier_commande(config.SujetsActionneurs.GARAGE_PORTE_CMD, "ferme")
@@ -207,7 +243,15 @@ class Controleur:
     def _publier_commande(self, sujet, commande):
         #*DONE: publier la commande sur le sujet actionneur
         self.client.publish(sujet, json.dumps({"commande": commande}))
-        
+
+    def _publier_alerte(self, message):
+        alerte = json.dumps({
+            "alerte": message, 
+            "horodatage": datetime.now().isoformat(timespec="seconds")
+        })
+        self.client.publish(SUJET_ALERTES, alerte, qos=1, retain=False)
+        print(f"🚨 ALERTE: {message}")
+
     def demarrer(self):
         #*DONE: connecter au courtier et lancer la boucle MQTT
         self.client.connect(config.MQTT_HOST, config.MQTT_PORT)
