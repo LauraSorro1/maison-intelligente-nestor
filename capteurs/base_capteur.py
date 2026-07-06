@@ -7,7 +7,7 @@ la boucle de publication périodique et du formatage du message JSON.
 import json
 import time
 from datetime import datetime
-
+import paho.mqtt.client as mqtt
 import config
 
 
@@ -27,9 +27,27 @@ class Capteur:
         self.periode = periode
         self.client = client
 
+    @staticmethod
+    def creer_client(client_id, sujet_sante):
+        """Crée un client MQTT avec LWT préconfigurée.
+        Le LWT signale automatiquement une déconnexion brutale
+        en publiant 'hors-ligne' sur le sujet de santé du capteur.
+        """
+
+        client = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2,
+            client_id=client_id
+        )
+        client.will_set(
+            topic=sujet_sante,
+            payload=json.dumps({"etat": "hors-ligne"}),
+            qos=1,
+            retain=True
+        )
+        return client
+
     def lire(self):
         """Retourne la prochaine valeur du capteur.
-
         À redéfinir dans chaque sous-classe.
         """
         raise NotImplementedError
@@ -51,9 +69,8 @@ class Capteur:
                 #*DONE: simuler la lecture du capteur et publier le message JSON sur le sujet MQTT à un interval de temps défini par self.periode
                 valeur = self.lire()
                 message = json.dumps(self.construire_message(valeur))
-                self.client.publish(self.sujet, message)
+                self.client.publish(self.sujet, message, qos=0, retain=True)
                 time.sleep(self.periode)
-                pass
         except KeyboardInterrupt:
             print(f"\n[{self.type_capteur}] arrêté.")
         finally:
