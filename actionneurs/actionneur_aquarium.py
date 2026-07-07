@@ -1,10 +1,7 @@
-"""Actionneur aquarium — classe Python.
+"""Actionneur de l'aquarium — classe Python.
 
 S'abonne à maison/salon/aquarium/cmd et réagit aux commandes
 "sonne"/"silence". Publie son état sur maison/salon/aquarium/etat.
-
-CECI EST UN EXEMPLE D'ACTIONNEUR : créez vos propres actionneurs pour
-les autres objets.
 
 Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m actionneurs.actionneur_aquarium

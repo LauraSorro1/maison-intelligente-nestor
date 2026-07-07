@@ -1,12 +1,11 @@
-"""Capteur de mouvement de l'entrée — OpenCV — classe Python.
+"""Capteur de mouvement de l'entrée — classe Python.
 
-Détecte le mouvement via la webcam et publie 0 ou 1
-sur maison/entree/mouvement.
+Publie 0 ou 1 sur maison/entree/mouvement.
 
 Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m capteurs.capteur_entree_mouvement
 """
-import cv2
+import random
 from config import SujetsCapteurs
 from capteurs.base_capteur import Capteur
 
@@ -23,26 +22,13 @@ class CapteurEntreeMouvement(Capteur):
                 "maison/entree/mouvement/sante"
             )
         )
-        self.valeur = 0
-        self.cap = cv2.VideoCapture(0)      # webcam intégrée
-        self.frame_precedente = None         # frame de référence
+        self.valeur = 0  # pas de mouvement au départ
 
     def lire(self):
-        ret, frame = self.cap.read()
-        if not ret:
-            print("Erreur : impossible de lire la webcam.")
-            return self.valeur
-        gris = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # conversion en niveaux de gris
-        gris = cv2.GaussianBlur(gris, (21, 21), 0)  # flou pour réduire le bruit
-        self.frame_precedente = self.frame_precedente if self.frame_precedente is not None else gris
-        diff = cv2.absdiff(self.frame_precedente, gris)  # différence entre frames
-        _, seuil = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)  # seuillage
-        self.valeur = 1 if seuil.sum() > 10000 else 0  # seuil pour détecter le mouvement
-        self.frame_precedente = gris  # mise à jour de la frame précédente
+        # Simule une détection : 20% de chance que l'état change
+        if random.random() < 0.2:
+            self.valeur = 1 if self.valeur == 0 else 0
         return self.valeur
-
-    def __del__(self):
-        self.cap.release()
 
 
 if __name__ == "__main__":
