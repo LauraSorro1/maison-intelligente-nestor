@@ -14,21 +14,21 @@ MQTT_PORT = 1883
 # --- Sujets MQTT des capteurs (publieurs) ---
 class SujetsCapteurs(StrEnum):
     # Salon
-    SALON_TEMPERATURE       = "maison/salon/temperature"
-    SALON_LUMINOSITE        = "maison/salon/luminosite"
-    SALON_HUMIDITE          = "maison/salon/humidite"
+    SALON_TEMPERATURE           = "maison/salon/temperature"
+    SALON_LUMINOSITE            = "maison/salon/luminosite"
+    SALON_HUMIDITE              = "maison/salon/humidite"
     # Aquarium (salon)
-    SALON_AQUARIUM          = "maison/salon/aquarium/temperature"
-    SALON_AQUARIUM_PH       = "maison/salon/aquarium/ph"
-    SALON_AQUARIUM_NIVEAU   = "maison/salon/aquarium/niveau"
+    SALON_AQUARIUM_TEMPERATURE  = "maison/salon/aquarium/temperature"
+    SALON_AQUARIUM_PH           = "maison/salon/aquarium/ph"
+    SALON_AQUARIUM_NIVEAU       = "maison/salon/aquarium/niveau"
     # Entrée
-    ENTREE_MOUVEMENT        = "maison/entree/mouvement"
-    ENTREE_PORTE            = "maison/entree/porte"
+    ENTREE_MOUVEMENT            = "maison/entree/mouvement"
+    ENTREE_PORTE                = "maison/entree/porte"
     # Garage
-    GARAGE_TEMPERATURE      = "maison/garage/temperature"
-    GARAGE_CO               = "maison/garage/co"
-    GARAGE_VEHICULE         = "maison/garage/vehicule"
-    GARAGE_BARCODE          = "maison/garage/barcode"
+    GARAGE_TEMPERATURE          = "maison/garage/temperature"
+    GARAGE_CO                   = "maison/garage/co"
+    GARAGE_VEHICULE             = "maison/garage/vehicule"
+    GARAGE_BARCODE              = "maison/garage/barcode"
 
 # --- Sujets MQTT des actionneurs (abonnés) ---
 class SujetsActionneurs(StrEnum):
@@ -55,7 +55,7 @@ class SujetsActionneurs(StrEnum):
     GARAGE_LUMIERE_CMD          = "maison/garage/lumiere/cmd"
     GARAGE_LUMIERE_ETAT         = "maison/garage/lumiere/etat"
 
-# --- Correspondance type de capteur → table SQL ---
+# --- Correspondance type de capteur → table SQL (Projet 2) ---
 TABLES_CAPTEURS = {
     # Salon
     "temperature_salon":        "lectures_temperature_salon",

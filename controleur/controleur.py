@@ -4,11 +4,9 @@ Le contrôleur assume SIMULTANÉMENT les deux rôles du modèle
 publish-subscribe :
 
   • ABONNÉ : il s'abonne à chaque sujet de capteur (voir config.SujetsCapteurs)
-    (une table par capteur).
 
   • PUBLIEUR : il applique des règles d'automatisation et publie des
-    commandes vers les sujets auxquels les actionneurs sont abonnés
-    (p. ex. faire sonner l'alarme de l'aquarium).
+    commandes vers les sujets auxquels les actionneurs sont abonnés.
 
 Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m controleur.controleur
@@ -16,28 +14,26 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
 import json
 import paho.mqtt.client as mqtt
 import config
-from datetime import datetime
-import time
 
 
 # Salon
 SALON_TEMP_MIN = 18.0
 SALON_TEMP_MAX = 23.0
-SALON_LUX_MIN = 200.0
+SALON_LUX_MIN  = 200.0
 
-# Chambre
-CHAMBRE_TEMP_MIN = 16.0
-CHAMBRE_TEMP_MAX = 23.0
+# Aquarium — plage normale eau douce (source : aquariophilie-aquarium.fr)
+AQUARIUM_PH_MIN     = 6.8
+AQUARIUM_PH_MAX     = 7.5
+AQUARIUM_NIVEAU_MIN = 70.0  # % — UV s'éteint si niveau bas
 
-# Garage
-GARAGE_TEMP_MIN = 5.0
-GARAGE_TEMP_MAX = 7.0
+# Garage — norme minimale Ville de Montréal (Règlement 03-096)
+GARAGE_TEMP_MIN = 15.0
+GARAGE_TEMP_MAX = 17.0
+GARAGE_CO_MAX   = 25.0  # ppm — seuil Santé Canada
 
-# Alertes
-SUJET_ALERTES = "maison/alertes"
-HEURE_NUIT_DEBUT = 23 # heures
-HEURE_NUIT_FIN = 5 # heures
-PORTE_OUVERTE_MAX = 30 # secondes
+# Codes-barres autorisés pour l'ouverture de la porte du garage
+CODES_AUTORISES = ["AUTO-001", "AUTO-002", "AUTO-003"]
+
 
 class Controleur:
     def __init__(self):
@@ -47,41 +43,45 @@ class Controleur:
         self.client.on_connect = self._on_connect
         self.client.on_message = self._on_message
 
-        # Mémoire d'état pour éviter de republier/alerter en boucle.
-        self.salon_lumiere_allumee = False
-        self.salon_thermopompe_etat = "arrete"
-        self.chambre_thermopompe_etat = "arrete"
-        self.entree_lumiere_allumee = False
-        self.entree_serrure_verrouillee = False
-        self.garage_chauffage_allume = False
-        self.garage_porte_ouverte = False
-
-        # Variables d'état.
-        self.entree_porte_ouverte_depuis = None # timestamp d'ouverture
-        self.alerte_porte_envoyee = False # pour éviter d'envoyer plusieurs alertes
-        self.alerte_temp_salon_envoyee = False
+        # Mémoire d'état pour éviter de republier en boucle.
+        self.salon_lumiere_allumee    = False
+        self.salon_thermopompe_etat   = "arrete"
+        self.entree_lumiere_allumee   = False
+        self.entree_serrure_verrouillee = True   # verrouillée par défaut
+        self.garage_chauffage_allume  = False
+        self.garage_porte_ouverte     = False
+        self.garage_lumiere_allumee   = False
+        self.garage_vehicule_present  = False
+        self.garage_barcode_valide    = False
+        self.aquarium_pompe_allumee   = True     # pompe tourne en continu
+        self.aquarium_uv_allumee      = True     # UV allumé en continu
 
     # ----- Connexion / abonnement -----
     def _on_connect(self, client, userdata, flags, reason_code, properties):
         if reason_code == 0:
             print(f"Contrôleur connecté au courtier {config.MQTT_HOST}:{config.MQTT_PORT}")
-            # *DONE: abonnés à chaque sujet capteur (voir config.SujetsCapteurs)
+            # Salon
             client.subscribe(config.SujetsCapteurs.SALON_TEMPERATURE.value)
             client.subscribe(config.SujetsCapteurs.SALON_LUMINOSITE.value)
-            client.subscribe(config.SujetsCapteurs.CHAMBRE_TEMPERATURE.value)
-            client.subscribe(config.SujetsCapteurs.CHAMBRE_HUMIDITE.value)
+            client.subscribe(config.SujetsCapteurs.SALON_HUMIDITE.value)
+            # Aquarium
+            client.subscribe(config.SujetsCapteurs.SALON_AQUARIUM_TEMPERATURE.value)
+            client.subscribe(config.SujetsCapteurs.SALON_AQUARIUM_PH.value)
+            client.subscribe(config.SujetsCapteurs.SALON_AQUARIUM_NIVEAU.value)
+            # Entrée
             client.subscribe(config.SujetsCapteurs.ENTREE_MOUVEMENT.value)
             client.subscribe(config.SujetsCapteurs.ENTREE_PORTE.value)
+            # Garage
             client.subscribe(config.SujetsCapteurs.GARAGE_TEMPERATURE.value)
+            client.subscribe(config.SujetsCapteurs.GARAGE_CO.value)
             client.subscribe(config.SujetsCapteurs.GARAGE_VEHICULE.value)
+            client.subscribe(config.SujetsCapteurs.GARAGE_BARCODE.value)
         else:
             print(f"Échec de connexion MQTT (code {reason_code})")
 
     # ----- Réception d'un message capteur -----
     def _on_message(self, client, userdata, msg):
         texte = msg.payload.decode("utf-8")
-        # Premièrement, on s'assure que le message est un JSON valide et qu'il contient les champs attendus.
-        # Ensuite, on extrait le type de capteur, la valeur et l'unité (si présente) pour les étapes suivantes.
         try:
             message = json.loads(texte)
             type_capteur = message["type"]
@@ -91,31 +91,40 @@ class Controleur:
             print(f"Message ignoré (format inattendu) sur {msg.topic} : {texte}")
             return
 
-        # 1) Journaliser dans MariaDB (une table par capteur).
-        # Comme discuté en classe, la journalisation est repoussée au projet 2. Vous pouvez décommenter la ligne ci-dessous quand vous aurez implémenté la fonction _journaliser().
+        # Journalisation MariaDB repoussée au Projet 2.
         # self._journaliser(type_capteur, valeur, unite, msg.topic)
 
-        # 2) Appliquer les règles d'automatisation.
+        # Appliquer les règles d'automatisation.
         if type_capteur == "temperature_salon":
             self._regle_salon_temperature(valeur)
         elif type_capteur == "luminosite_salon":
             self._regle_salon_luminosite(valeur)
-        elif type_capteur == "temperature_chambre":
-            self._regle_chambre_temperature(valeur)
+        elif type_capteur == "humidite_salon":
+            pass  # surveillé mais pas de règle automatique
+        elif type_capteur == "temperature_aquarium":
+            pass  # surveillé mais pas de règle automatique
+        elif type_capteur == "ph_aquarium":
+            self._regle_aquarium_ph(valeur)
+        elif type_capteur == "niveau_aquarium":
+            self._regle_aquarium_niveau(valeur)
         elif type_capteur == "mouvement_entree":
             self._regle_entree_mouvement(valeur)
+        elif type_capteur == "porte_entree":
+            pass  # surveillé mais pas de règle automatique
         elif type_capteur == "temperature_garage":
             self._regle_garage_temperature(valeur)
+        elif type_capteur == "co_garage":
+            self._regle_garage_co(valeur)
         elif type_capteur == "vehicule_garage":
             self._regle_garage_vehicule(valeur)
-        elif type_capteur == "porte_entree":
-            self._regle_entree_porte(valeur)
+        elif type_capteur == "barcode_garage":
+            self._regle_garage_barcode(valeur)
 
-    #  Comme discuté en classe, la journalisation est repoussée au projet 2
-    #def _journaliser(self, type_capteur, valeur, unite, sujet):
-    #     # TODO: insérer la lecture dans la table MariaDB correspondante au capteur.
-    #     #       Astuce : importez db et appelez db.inserer_lecture(type_capteur, valeur, unite).
+    # Journalisation repoussée au Projet 2.
+    # def _journaliser(self, type_capteur, valeur, unite, sujet):
     #     pass
+
+    # ----- Règles — Salon -----
 
     def _regle_salon_luminosite(self, valeur):
         try:
@@ -140,52 +149,40 @@ class Controleur:
             self._publier_commande(config.SujetsActionneurs.SALON_THERMOPOMPE_CMD, "chauffe")
             self.salon_thermopompe_etat = "chauffe"
             print(f"RÈGLE: température trop basse ({temp}°C) → thermopompe salon chauffe")
-            if not self.alerte_temp_salon_envoyee:
-                self._publier_alerte(f"température salon hors plage ({temp}°C)")
-                self.alerte_temp_salon_envoyee = True
-        elif temp > SALON_TEMP_MAX and self.salon_thermopompe_etat!= "climatise":
+        elif temp > SALON_TEMP_MAX and self.salon_thermopompe_etat != "climatise":
             self._publier_commande(config.SujetsActionneurs.SALON_THERMOPOMPE_CMD, "climatise")
             self.salon_thermopompe_etat = "climatise"
             print(f"RÈGLE: température trop haute ({temp}°C) → thermopompe salon climatise")
-            if not self.alerte_temp_salon_envoyee:
-                self._publier_alerte(f"température salon hors plage ({temp}°C)")
-                self.alerte_temp_salon_envoyee = True
         elif SALON_TEMP_MIN <= temp <= SALON_TEMP_MAX and self.salon_thermopompe_etat != "arrete":
             self._publier_commande(config.SujetsActionneurs.SALON_THERMOPOMPE_CMD, "arrete")
             self.salon_thermopompe_etat = "arrete"
             print(f"RÈGLE: température dans la plage ({temp}°C) → thermopompe salon arrêtée")
-            self.alerte_temp_salon_envoyee = False # réinitialiser l'alerte pour la prochaine fois que la température sortira de la plage
 
-    def _regle_chambre_temperature(self, valeur):
+    # ----- Règles — Aquarium -----
+
+    def _regle_aquarium_ph(self, valeur):
         try:
-            temp = float(valeur)
+            ph = float(valeur)
         except (TypeError, ValueError):
             return
-        if temp < CHAMBRE_TEMP_MIN and self.chambre_thermopompe_etat != "chauffe":
-            self._publier_commande(config.SujetsActionneurs.CHAMBRE_THERMOPOMPE_CMD, "chauffe")
-            self.chambre_thermopompe_etat = "chauffe"
-            print(f"RÈGLE: température trop basse ({temp}°C) → thermopompe chambre chauffe")
-        elif temp > CHAMBRE_TEMP_MAX and self.chambre_thermopompe_etat!= "climatise":
-            self._publier_commande(config.SujetsActionneurs.CHAMBRE_THERMOPOMPE_CMD, "climatise")
-            self.chambre_thermopompe_etat = "climatise"
-            print(f"RÈGLE: température trop haute ({temp}°C) → thermopompe chambre climatise")
-        elif CHAMBRE_TEMP_MIN <= temp <= CHAMBRE_TEMP_MAX and self.chambre_thermopompe_etat != "arrete":
-            self._publier_commande(config.SujetsActionneurs.CHAMBRE_THERMOPOMPE_CMD, "arrete")
-            self.chambre_thermopompe_etat = "arrete"
-            print(f"RÈGLE: température dans la plage ({temp}°C) → thermopompe chambre arrêtée")
+        if ph < AQUARIUM_PH_MIN or ph > AQUARIUM_PH_MAX:
+            print(f"RÈGLE: pH hors plage ({ph}) → surveillance requise")
 
-    def _regle_entree_porte(self, valeur):
-        if valeur == "ouvert":
-            if self.entree_porte_ouverte_depuis is None:
-                self.entree_porte_ouverte_depuis = time.time()
-                print("RÈGLE: porte entrée ouverte → surveillance démarrée")
-            elif time.time() - self.entree_porte_ouverte_depuis > 30 and not self.alerte_porte_envoyee:
-                self._publier_alerte("porte entrée ouverte trop longtemps")
-                self.alerte_porte_envoyee = True
-        elif valeur == "ferme":
-            self.entree_porte_ouverte_depuis = None
-            self.alerte_porte_envoyee = False
-            print("RÈGLE: porte entrée fermée → surveillance réinitialisée")
+    def _regle_aquarium_niveau(self, valeur):
+        try:
+            niveau = float(valeur)
+        except (TypeError, ValueError):
+            return
+        if niveau < AQUARIUM_NIVEAU_MIN and self.aquarium_uv_allumee:
+            self._publier_commande(config.SujetsActionneurs.SALON_AQUARIUM_UV_CMD, "eteint")
+            self.aquarium_uv_allumee = False
+            print(f"RÈGLE: niveau aquarium bas ({niveau}%) → UV éteint (protection)")
+        elif niveau >= AQUARIUM_NIVEAU_MIN and not self.aquarium_uv_allumee:
+            self._publier_commande(config.SujetsActionneurs.SALON_AQUARIUM_UV_CMD, "allume")
+            self.aquarium_uv_allumee = True
+            print(f"RÈGLE: niveau aquarium suffisant ({niveau}%) → UV allumé")
+
+    # ----- Règles — Entrée -----
 
     def _regle_entree_mouvement(self, valeur):
         try:
@@ -195,21 +192,13 @@ class Controleur:
         if mouvement == 1 and not self.entree_lumiere_allumee:
             self._publier_commande(config.SujetsActionneurs.ENTREE_LUMIERE_CMD, "allume")
             self.entree_lumiere_allumee = True
-            print(f"RÈGLE: mouvement détecté → lumière entrée allumée")
-            self._publier_commande(config.SujetsActionneurs.ENTREE_SERRURE_CMD, "verrouille")
-            self.entree_serrure_verrouillee = True
-            print(f"RÈGLE: mouvement détecté → serrure entrée verrouillée")
-            # alerte nocturne
-            heure = datetime.now().hour
-            if (heure >= HEURE_NUIT_DEBUT or heure < HEURE_NUIT_FIN):
-                self._publier_alerte("Mouvement détecté à l'entrée pendant la nuit")
+            print("RÈGLE: mouvement détecté → lumière entrée allumée")
         elif mouvement == 0 and self.entree_lumiere_allumee:
             self._publier_commande(config.SujetsActionneurs.ENTREE_LUMIERE_CMD, "eteint")
             self.entree_lumiere_allumee = False
-            print(f"RÈGLE: pas de mouvement → lumière entrée éteinte")
-            self._publier_commande(config.SujetsActionneurs.ENTREE_SERRURE_CMD, "deverrouille")
-            self.entree_serrure_verrouillee = False
-            print(f"RÈGLE: pas de mouvement → serrure entrée déverrouillée")
+            print("RÈGLE: pas de mouvement → lumière entrée éteinte")
+
+    # ----- Règles — Garage -----
 
     def _regle_garage_temperature(self, valeur):
         try:
@@ -223,37 +212,56 @@ class Controleur:
         elif temp >= GARAGE_TEMP_MAX and self.garage_chauffage_allume:
             self.garage_chauffage_allume = False
             self._publier_commande(config.SujetsActionneurs.GARAGE_CHAUFFAGE_CMD, "eteint")
-            print(f"RÈGLE: température dans la plage ({temp}°C) → chauffage garage arrêté")
+            print(f"RÈGLE: température suffisante ({temp}°C) → chauffage garage éteint")
+
+    def _regle_garage_co(self, valeur):
+        try:
+            co = float(valeur)
+        except (TypeError, ValueError):
+            return
+        if co > GARAGE_CO_MAX and not self.garage_porte_ouverte:
+            self.garage_porte_ouverte = True
+            self._publier_commande(config.SujetsActionneurs.GARAGE_PORTE_CMD, "ouvre")
+            print(f"RÈGLE: CO dangereux ({co} ppm > {GARAGE_CO_MAX} ppm) → porte garage ouverte")
 
     def _regle_garage_vehicule(self, valeur):
         try:
-            mouvement = int(valeur)
+            vehicule = int(valeur)
         except (TypeError, ValueError):
             return
-        if mouvement == 1 and not self.garage_porte_ouverte:
-            self.garage_porte_ouverte = True
-            self._publier_commande(config.SujetsActionneurs.GARAGE_PORTE_CMD, "ouvre")
-            print(f"RÈGLE: véhicule détecté → porte garage ouverte")
-            self._publier_alerte("Véhicule détecté dans le garage")
-        elif mouvement == 0 and self.garage_porte_ouverte:
-            self.garage_porte_ouverte = False
-            self._publier_commande(config.SujetsActionneurs.GARAGE_PORTE_CMD, "ferme")
-            print(f"RÈGLE: pas de véhicule → porte garage fermée")
+        if vehicule == 1 and not self.garage_vehicule_present:
+            self.garage_vehicule_present = True
+            print("RÈGLE: véhicule détecté → en attente du code-barres")
+        elif vehicule == 0 and self.garage_vehicule_present:
+            self.garage_vehicule_present = False
+            self.garage_barcode_valide = False
+            if self.garage_porte_ouverte:
+                self.garage_porte_ouverte = False
+                self._publier_commande(config.SujetsActionneurs.GARAGE_PORTE_CMD, "ferme")
+                print("RÈGLE: véhicule parti → porte garage fermée")
+            if self.garage_lumiere_allumee:
+                self.garage_lumiere_allumee = False
+                self._publier_commande(config.SujetsActionneurs.GARAGE_LUMIERE_CMD, "eteint")
+                print("RÈGLE: véhicule parti → lumière garage éteinte")
+
+    def _regle_garage_barcode(self, valeur):
+        if self.garage_vehicule_present and valeur in CODES_AUTORISES:
+            self.garage_barcode_valide = True
+            if not self.garage_porte_ouverte:
+                self.garage_porte_ouverte = True
+                self._publier_commande(config.SujetsActionneurs.GARAGE_PORTE_CMD, "ouvre")
+                print(f"RÈGLE: code-barres valide ({valeur}) → porte garage ouverte")
+            if not self.garage_lumiere_allumee:
+                self.garage_lumiere_allumee = True
+                self._publier_commande(config.SujetsActionneurs.GARAGE_LUMIERE_CMD, "allume")
+                print(f"RÈGLE: code-barres valide ({valeur}) → lumière garage allumée")
+        elif valeur not in CODES_AUTORISES and valeur != "INCONNU":
+            print(f"RÈGLE: code-barres refusé ({valeur}) → porte reste fermée")
 
     def _publier_commande(self, sujet, commande):
-        #*DONE: publier la commande sur le sujet actionneur
         self.client.publish(sujet, json.dumps({"commande": commande}))
 
-    def _publier_alerte(self, message):
-        alerte = json.dumps({
-            "alerte": message, 
-            "horodatage": datetime.now().isoformat(timespec="seconds")
-        })
-        self.client.publish(SUJET_ALERTES, alerte, qos=1, retain=False)
-        print(f"🚨 ALERTE: {message}")
-
     def demarrer(self):
-        #*DONE: connecter au courtier et lancer la boucle MQTT
         self.client.connect(config.MQTT_HOST, config.MQTT_PORT)
         print("Contrôleur démarré (Ctrl+C pour arrêter).")
         try:

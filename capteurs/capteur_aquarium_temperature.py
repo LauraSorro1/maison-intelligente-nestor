@@ -14,7 +14,7 @@ class CapteurAquariumTemperature(Capteur):
     def __init__(self):
         super().__init__(
             type_capteur="temperature_aquarium",
-            sujet=SujetsCapteurs.SALON_AQUARIUM,
+            sujet=SujetsCapteurs.SALON_AQUARIUM_TEMPERATURE,
             unite="C",
             periode=2.0,
             client=Capteur.creer_client(
@@ -25,12 +25,10 @@ class CapteurAquariumTemperature(Capteur):
         self.valeur = 24.0  # température de départ
 
     def lire(self):
-        self.valeur += random.uniform(-0.3, 0.3) # plus stable qu'une pièce
-        self.valeur = max(18.0, min(26.0, self.valeur))  # limite la température entre 18°C et 26°C
+        self.valeur += random.uniform(-0.3, 0.3)  # plus stable qu'une pièce
+        self.valeur = max(18.0, min(26.0, self.valeur))  # plage recommandée eau douce
         return round(self.valeur, 2)
 
 
-# En lançant ce script, on instancie un capteur et on le démarre :
-# il publie des valeurs sur le sujet MQTT à intervalle régulier.
 if __name__ == "__main__":
     CapteurAquariumTemperature().demarrer()
