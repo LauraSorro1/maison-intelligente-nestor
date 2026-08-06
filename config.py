@@ -11,6 +11,13 @@ from enum import StrEnum
 MQTT_HOST = "localhost"
 MQTT_PORT = 1883
 
+# --- Base de données MariaDB ---
+# Ajustez l'utilisateur et le mot de passe selon votre installation locale.
+DB_HOST = "127.0.0.1"  
+DB_USER = "utilisateur"
+DB_PASSWORD = "motdepasse"
+DB_NAME = "maison"
+
 # --- Sujets MQTT des capteurs (publieurs) ---
 # Un capteur publie sous maison/.../<grandeur> : commencez toujours par
 # maison/ et finissez par la grandeur mesurée. Le nombre de niveaux

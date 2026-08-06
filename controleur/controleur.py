@@ -18,9 +18,11 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
 """
 import json
 
+import mariadb
 import paho.mqtt.client as mqtt
 
 import config
+from basededonnees.db import BaseDeDonnees
 
 
 
@@ -40,7 +42,7 @@ class Controleur:
         # Mémoire d'état pour éviter de republier/alerter en boucle.
         # Je l'utilise dans l'exemple de règle de température, mais vous pouvez/devez en ajouter d'autres.
         self.temperature_aquarium_hors_plage = False
-
+        self.db = BaseDeDonnees()
     # ----- Connexion / abonnement -----
     def _on_connect(self, client, userdata, flags, reason_code, properties):
         if reason_code == 0:
@@ -63,20 +65,24 @@ class Controleur:
             print(f"Message ignoré (format inattendu) sur {msg.topic} : {texte}")
             return
 
-        # 1) Journaliser dans MariaDB (une table par capteur).
-        # Comme discuté en classe, la journalisation est repoussée au projet 2. Vous pouvez décommenter la ligne ci-dessous quand vous aurez implémenté la fonction _journaliser().
-        # self._journaliser(type_capteur, valeur, unite, msg.topic)
+        self._journaliser(type_capteur, valeur, unite, msg.topic)
 
         # 2) Appliquer les règles d'automatisation.
         if type_capteur == "temperature_aquarium":
             self._regle_temperature(valeur)
         # elif type_capteur == "...":     # ← ajoutez vos règles ici
 
-    #  Comme discuté en classe, la journalisation est repoussée au projet 2
-    #def _journaliser(self, type_capteur, valeur, unite, sujet):
-    #     # TODO: insérer la lecture dans la table MariaDB correspondante au capteur.
-    #     #       Astuce : importez db et appelez db.inserer_lecture(type_capteur, valeur, unite).
-    #     pass
+    def _journaliser(self, type_capteur, valeur, unite, sujet):
+        table = config.TABLES_CAPTEURS.get(type_capteur)
+        if table is None:
+            print(f"Aucune table pour le capteur {type_capteur!r} : "
+                  "ajoutez-le à config.TABLES_CAPTEURS.")
+            return
+        # si la base n'est pas disponible, on ne veut pas que le contrôleur plante, donc on attrape l'exception et on print l'erreur.
+        try:
+            self.db.inserer(table, {"valeur": valeur, "unite": unite})
+        except mariadb.Error as erreur:
+            print(f"Journalisation impossible pour {sujet} : {erreur}")
 
     # ----- Règle d'exemple : Température hors plage → actionneur + alerte -----
     def _regle_temperature(self, valeur):
