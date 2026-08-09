@@ -11,13 +11,18 @@ class MaisonMQTT:
 
     def __init__(self):
 
-        #TODO: Ajoutez vos capteurs et actionneurs avec leurs sujets MQTT
+        # * DONE: Ajoutez vos capteurs et actionneurs avec leurs sujets MQTT
+        # Sujets des capteurs surveillés -> nom officiel du capteur
         self.topics_capteurs = {
-            "maison/salon/aquarium/temperature": "temperature_aquarium",
+            config.SujetsCapteurs.SALON_AQUARIUM_TEMPERATURE.value: "temperature_aquarium",
+            config.SujetsCapteurs.SALON_TEMPERATURE.value: "temperature_salon",
         }
 
+        # Nom officiel de l'actionneur -> sujet de commande MQTT
         self.topics_actionneurs = {
-            "alarme": "maison/salon/aquarium/cmd"
+            "aquarium_pompe": config.SujetsActionneurs.SALON_AQUARIUM_POMPE_CMD.value,
+            "aquarium_uv":    config.SujetsActionneurs.SALON_AQUARIUM_UV_CMD.value,
+            "entree_serrure": config.SujetsActionneurs.ENTREE_SERRURE_CMD.value,
         }
 
         self.dernieres_valeurs = {}
@@ -27,12 +32,14 @@ class MaisonMQTT:
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
 
-    def on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
+    def on_connect(self, client, userdata, flags, reason_code, properties):
+        if reason_code == 0:
             print("Assistant connecte au broker MQTT")
-            # TODO: S'abonner aux topics des capteurs
+            # * DONE: S'abonner aux topics des capteurs
+            for topic in self.topics_capteurs.keys():
+                client.subscribe(topic)
         else:
-            print(f"Erreur de connexion : {rc}")
+            print(f"Erreur de connexion : {reason_code}")
 
     def on_message(self, client, userdata, message):
         capteur = self.topics_capteurs.get(message.topic)
@@ -49,9 +56,22 @@ class MaisonMQTT:
         self.client.loop_stop()
         self.client.disconnect()
 
+    # Traduction (appareil, action ON/OFF) -> commande comprise par l'actionneur.
+    # La serrure parle « verrouille/deverrouille », les autres « allume/eteint ».
+    COMMANDES = {
+        "aquarium_pompe": {"ON": "allume",     "OFF": "eteint"},
+        "aquarium_uv":    {"ON": "allume",     "OFF": "eteint"},
+        "entree_serrure": {"ON": "verrouille", "OFF": "deverrouille"},
+    }
+
     def commander(self, appareil, action):
-        # TODO: publier la commande sur le topic de l'actionneur visé
-        pass
+        # * DONE: publier la commande sur le topic de l'actionneur visé
+        """Publie la commande sur le topic de l'actionneur vise (format JSON,
+        identique a celui du controleur du Projet 1)."""
+        sujet = self.topics_actionneurs.get(appareil)
+        commande = self.COMMANDES.get(appareil, {}).get(action)
+        if sujet and commande:
+            self.client.publish(sujet, json.dumps({"commande": commande}))
 
     def lire(self, capteur):
         """Retourne la derniere valeur connue du capteur (ou None)."""
