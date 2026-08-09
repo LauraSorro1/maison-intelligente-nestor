@@ -12,8 +12,10 @@ Lancer comme module, depuis le dossier projet1-420-315-E26/ :
     python -m controleur.controleur
 """
 import json
+import mariadb
 import paho.mqtt.client as mqtt
 import config
+from basededonnees.db import BaseDeDonnees
 
 
 # Salon
@@ -55,6 +57,7 @@ class Controleur:
         self.garage_barcode_valide    = False
         self.aquarium_pompe_allumee   = True     # pompe tourne en continu
         self.aquarium_uv_allumee      = True     # UV allumé en continu
+        self.db = BaseDeDonnees()
 
     # ----- Connexion / abonnement -----
     def _on_connect(self, client, userdata, flags, reason_code, properties):
@@ -91,8 +94,7 @@ class Controleur:
             print(f"Message ignoré (format inattendu) sur {msg.topic} : {texte}")
             return
 
-        # Journalisation MariaDB repoussée au Projet 2.
-        # self._journaliser(type_capteur, valeur, unite, msg.topic)
+        self._journaliser(type_capteur, valeur, unite, msg.topic)
 
         # Appliquer les règles d'automatisation.
         if type_capteur == "temperature_salon":
@@ -120,9 +122,17 @@ class Controleur:
         elif type_capteur == "barcode_garage":
             self._regle_garage_barcode(valeur)
 
-    # Journalisation repoussée au Projet 2.
-    # def _journaliser(self, type_capteur, valeur, unite, sujet):
-    #     pass
+    def _journaliser(self, type_capteur, valeur, unite, sujet):
+        table = config.TABLES_CAPTEURS.get(type_capteur)
+        if table is None:
+            print(f"Aucune table pour le capteur {type_capteur!r} : "
+                  "ajoutez-le à config.TABLES_CAPTEURS.")
+            return
+        # si la base n'est pas disponible, on ne veut pas que le contrôleur plante, donc on attrape l'exception et on print l'erreur.
+        try:
+            self.db.inserer(table, {"valeur": valeur, "unite": unite})
+        except mariadb.Error as erreur:
+            print(f"Journalisation impossible pour {sujet} : {erreur}")
 
     # ----- Règles — Salon -----
 
