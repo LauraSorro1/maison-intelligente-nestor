@@ -30,6 +30,9 @@ class Oreille:
 
     def __init__(self):
         self.recognizer = sr.Recognizer()
+        # Tolerance aux pauses naturelles : on attend 1,2 s de silence avant
+        # de considerer la phrase terminee (defaut 0,8 s — coupait les phrases).
+        self.recognizer.pause_threshold = 1.2
         self.micro = sr.Microphone()
 
         print("Calibration du micro (silence pendant 1 seconde)...")

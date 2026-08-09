@@ -1,14 +1,17 @@
-import sys
-import time
-
 from assistant.intentions import analyser, normaliser
 from assistant.maison_mqtt import MaisonMQTT
 from basededonnees.db import BaseDeDonnees
 
-# TODO: définir un mot-clé pour activer l'assistant vocal (ex: "maison", "assistant", "robot", etc.)
-MOT_CLE = ""
+# * DONE: définir un mot-clé pour activer l'assistant vocal (ex: "maison", "assistant", "robot", etc.)
+# Mot-cle d'activation : « Merlin » — l'enchanteur qui commande d'une parole.
+# Mot francais natif : bien prononce par pyttsx3 ET bien reconnu par Google Speech.
+MOT_CLE = "merlin"
 
+# Nom officiel de l'actionneur -> nom naturel pour les reponses vocales
 NOMS_ACTIONNEURS = {
+    "aquarium_pompe": "la pompe de l'aquarium",
+    "aquarium_uv":    "la lumière UV de l'aquarium",
+    "entree_serrure": "la serrure de l'entrée",
 }
 
 
@@ -24,12 +27,14 @@ class Assistant:
             actionneur = intention["cible"]
             action = intention["action"]
 
-            self.maison.commander(appareil, action)
+            self.maison.commander(actionneur, action)   # bug corrigé : « appareil » n'existait pas
 
+            nom = NOMS_ACTIONNEURS[actionneur]
+            if actionneur == "entree_serrure":
+                return f"Je verrouille {nom}." if action == "ON" else f"Je déverrouille {nom}."
             if action == "ON":
-                return f"J'allume {NOMS_ACTIONNEURS[actionneur]} du salon."
-            else:
-                return f"J'éteins {NOMS_ACTIONNEURS[actionneur]} du salon."
+                return f"J'allume {nom}."
+            return f"J'éteins {nom}."
 
         elif intention["type"] == "REQUETE":
             capteur = intention["cible"]
@@ -39,24 +44,33 @@ class Assistant:
                 return "Je n'ai pas encore reçu de lecture pour ce capteur."
 
             if capteur == "temperature_aquarium":
-                return f"La temperature de l'aquarium est de {valeur} degrés Celsius."
-            # TODO: Ajouter d'autres capteurs et leurs reponses vocales
-            # elif capteur == "autre_capteur": ...
+                return f"La température de l'aquarium est de {valeur} degrés Celsius."
+            # * DONE: Ajouter d'autres capteurs et leurs réponses vocales
+            elif capteur == "temperature_salon":
+                return f"Il fait {valeur} degrés Celsius dans le salon."
 
-        else:
-            return "Désolée, je n'ai pas compris votre demande."
+        return "Désolé, je n'ai pas compris votre demande."
 
     def traiter_phrase(self, phrase):
         """Analyse une phrase, execute l'intention et retourne la reponse."""
         intention = analyser(phrase)
 
-        # TODO: Journaliser la commande recue (ou son rejet si INCONNUE) en utilisant self.db.inserer("nom_table", {"colonne": valeur, ...})
+        # * DONE: Journaliser la commande recue (ou son rejet si INCONNUE) en utilisant self.db.inserer("nom_table", {"colonne": valeur, ...})
+        self.db.inserer("journal_commandes", {
+            "phrase": phrase,
+            "type_intention": intention["type"],
+            "cible": intention.get("cible"),
+            "action": intention.get("action"),
+        })
         
         reponse = self.executer_intention(intention)
         if reponse is None:
-            reponse = "Désolée, je n'ai pas compris votre demande."
+            reponse = "Désolé, je n'ai pas compris votre demande."
 
-        # TODO: Journalise ce que l'assistant va dire a voix haute en utilisant self.db.inserer("nom_table", {"colonne": valeur, ...})
+        # * DONE: Journalise ce que l'assistant va dire à voix haute en utilisant self.db.inserer("nom_table", {"colonne": valeur, ...})
+        self.db.inserer("journal_reponses", {
+            "texte": reponse,
+        })
         
         return reponse
 
