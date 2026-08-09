@@ -44,7 +44,7 @@ class BaseDeDonnees:
                     horodatage DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )"""
             )
-        #* TODO: Créer les tables de journalisation de l'assistant vocal (commandes recues et réponses vocales) avec curseur.execute(f"""CREATE TABLE IF NOT EXISTS {table} (...)""")
+        #* DONE: Créer les tables de journalisation de l'assistant vocal (commandes recues et réponses vocales) avec curseur.execute(f"""CREATE TABLE IF NOT EXISTS {table} (...)""")
 
         # Table du journal des commandes vocales reçues
         curseur.execute(

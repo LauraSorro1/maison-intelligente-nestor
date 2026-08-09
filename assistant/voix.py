@@ -1,11 +1,28 @@
 import pyttsx3
 import speech_recognition as sr
 
-# TODO: Ajouter la lecture du texte a voix haute avec pyttsx3 en Francais
+# * DONE: Ajouter la lecture du texte a voix haute avec pyttsx3 en Francais
+
+# Moteur initialisé UNE SEULE FOIS au chargement du module (init() est lent ~1s).
+# Voix ciblée : Microsoft Claude (français canadien). Si absente sur la machine,
+# on retombe sur la première voix française trouvée.
+_moteur = pyttsx3.init()
+_voix_francaise = None
+for _voix in _moteur.getProperty('voices'):
+    if "Claude" in _voix.name:              # voix préférée : Claude (fr-CA)
+        _voix_francaise = _voix.id
+        break
+    if _voix_francaise is None and "fr" in _voix.id.lower():
+        _voix_francaise = _voix.id          # plan B : première voix française
+if _voix_francaise:
+    _moteur.setProperty('voice', _voix_francaise)
+
+
 def parler(texte):
     """Lit le texte a voix haute avec une voix francaise si disponible."""
     print(f"Assistant : {texte}")
-    pass
+    _moteur.say(texte)
+    _moteur.runAndWait()
 
 
 class Oreille:
