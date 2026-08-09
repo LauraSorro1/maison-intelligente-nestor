@@ -4,34 +4,68 @@ import unicodedata
 
 import nltk
 
+# Le tokeniseur de NLTK a besoin du modele « punkt_tab » : on le telecharge
+# une seule fois (les executions suivantes le trouvent en cache local).
+try:
+    nltk.data.find("tokenizers/punkt_tab")
+except LookupError:
+    nltk.download("punkt_tab")
 
 # Verbes reconnus pour interagir avec un actionneur
+# (imperatif ET infinitif : « allume » / « peux-tu allumer »)
 VERBES_ON = {
+    "allume", "allumer", "active", "activer", "demarre", "demarrer",
+    "verrouille", "verrouiller", "barre", "barrer",
 }
 
 VERBES_OFF = {
+    "eteins", "eteint", "eteindre", "ferme", "fermer", "arrete", "arreter",
+    "desactive", "desactiver", "deverrouille", "deverrouiller", "debarre", "debarrer",
 }
 
 # Noms d'actionneurs (et leurs surnoms) -> nom officiel de l'actionneur
 ACTIONNEURS = {
+    "pompe": "aquarium_pompe",
+    "uv": "aquarium_uv",
+    "sterilisateur": "aquarium_uv",
+    "serrure": "entree_serrure",
+    "porte": "entree_serrure",
+    "verrou": "entree_serrure",
 }
 
 # Mots-cles qui indiquent une requete d'etat -> nom officiel du capteur
 CAPTEURS = {
-    "temperature": "temperature_aquarium",
+    "aquarium": "temperature_aquarium",
+    "salon": "temperature_salon",
 }
 
-# TODO: Ajouter un regex pour detecter les formules de politesse (bonjour, merci, s'il vous plait, etc.)
-POLITESSE = re.compile(r"")
+# * DONE: Ajouter un regex pour detecter les formules de politesse (bonjour, merci, s'il vous plait, etc.)
+# Formules de politesse à retirer avant l'analyse (elles ne changent pas l'intention).
+# Ecrites sans accents et avec espaces (appliquees APRES normalisation des accents
+# et des apostrophes : « s'il te plaît » est deja devenu « s il te plait »).
+POLITESSE = re.compile(
+    r"\b(bonjour|salut|merci|s il te plait|s il vous plait|stp|svp|je voudrais|peux tu|pouvez vous)\b"
+)
 
-# TODO: Normaliser la phrase (minuscules, accents, ponctuation, politesse)
+
+# * DONE: Normaliser la phrase (minuscules, accents, ponctuation, politesse)
 def normaliser(phrase):
-    pass
+    """Prepare une phrase pour l'analyse : minuscules, sans accents,
+    sans ponctuation ni formules de politesse."""
+    texte = phrase.lower()                                      # 1. minuscules
+    texte = unicodedata.normalize("NFD", texte)                 # 2. decompose e+accent
+    texte = "".join(c for c in texte if not unicodedata.combining(c))  # jette les accents
+    texte = texte.replace("'", " ").replace("-", " ")           # 3. apostrophes et tirets
+    texte = POLITESSE.sub(" ", texte)                           # 4. retire la politesse
+    texte = re.sub(r"[^a-z0-9 ]", " ", texte)                   # 5. ponctuation restante
+    texte = re.sub(r"\s+", " ", texte).strip()                  # espaces multiples
+    return texte
     
 
-# TODO: Ajouter la tokenisation avec NLTK
+# * DONE: Ajouter la tokenisation avec NLTK
 def tokeniser(texte):
-    pass
+    """Decoupe le texte normalise en jetons (mots) avec NLTK."""
+    return nltk.word_tokenize(texte, language="french")
 
 
 def trouver_action(texte, tokens):
