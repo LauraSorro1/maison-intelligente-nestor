@@ -12,11 +12,12 @@ MQTT_HOST = "localhost"
 MQTT_PORT = 1883
 
 # --- Base de données MariaDB ---
-# Ajustez l'utilisateur et le mot de passe selon votre installation locale.
-DB_HOST = "127.0.0.1"  
-DB_USER = "utilisateur"
-DB_PASSWORD = "motdepasse"
+# Ajustés selon mon installation locale.
+DB_HOST = "localhost"  
+DB_USER = "root"
+DB_PASSWORD = "***RETIRE***"
 DB_NAME = "maison"
+DB_PORT = 3306
 
 # --- Sujets MQTT des capteurs (publieurs) ---
 class SujetsCapteurs(StrEnum):

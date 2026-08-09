@@ -1,2 +1,14 @@
+# Projet 1 + 2 — 420-315-AH
+# IMPORTANT : utiliser Python 3.13 (PyAudio n'a pas de binaires précompilés pour 3.14)
+# Installation : py -3.13 -m pip install -r requirements.txt
+
 paho-mqtt>=2.0
 mariadb>=1.1
+
+# --- Assistant vocal (Projet 2) ---
+SpeechRecognition>=3.10
+pyaudio>=0.2.14
+# pyttsx3 épinglé à 2.71 : les versions plus récentes ne relisent plus
+# après le premier runAndWait() (bug connu du moteur SAPI5)
+pyttsx3==2.71
+nltk>=3.9

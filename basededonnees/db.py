@@ -44,7 +44,28 @@ class BaseDeDonnees:
                     horodatage DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )"""
             )
-        # TODO: Créer les tables de journalisation de l'assistant vocal (commandes recues et réponses vocales) avec curseur.execute(f"""CREATE TABLE IF NOT EXISTS {table} (...)""")
+        #* TODO: Créer les tables de journalisation de l'assistant vocal (commandes recues et réponses vocales) avec curseur.execute(f"""CREATE TABLE IF NOT EXISTS {table} (...)""")
+
+        # Table du journal des commandes vocales reçues
+        curseur.execute(
+            """CREATE TABLE IF NOT EXISTS journal_commandes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                phrase VARCHAR(255) NOT NULL,
+                type_intention VARCHAR(16) NOT NULL,
+                cible VARCHAR(64),
+                action VARCHAR(8),
+                horodatage DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )"""
+        )
+
+        # Table du journal des réponses vocales générées
+        curseur.execute(
+            """CREATE TABLE IF NOT EXISTS journal_reponses (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                texte VARCHAR(255) NOT NULL,
+                horodatage DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )"""
+        )
 
     def inserer(self, table, valeurs):
         """Insère une ligne dans `table` ; `valeurs` est un dict colonne → valeur.
