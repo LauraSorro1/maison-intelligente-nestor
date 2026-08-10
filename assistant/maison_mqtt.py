@@ -73,6 +73,14 @@ class MaisonMQTT:
         if sujet and commande:
             self.client.publish(sujet, json.dumps({"commande": commande}))
 
+    def publier_interaction(self, phrase, type_intention, reponse):
+        charge = {
+            "phrase": phrase,
+            "type": type_intention,
+            "reponse": reponse,
+        }
+        self.client.publish(config.SUJET_JOURNAL_VOCAL, json.dumps(charge))
+
     def lire(self, capteur):
         """Retourne la derniere valeur connue du capteur (ou None)."""
         return self.dernieres_valeurs.get(capteur)

@@ -71,9 +71,11 @@ class Assistant:
         self.db.inserer("journal_reponses", {
             "texte": reponse,
         })
-        
-        return reponse
 
+        self.maison.publier_interaction(phrase, intention["type"], reponse)
+
+        return reponse
+        
     def main(self):
         """Boucle principale : mot-cle, capture de phrase, reponse vocale."""
         from assistant.voix import Oreille, parler
@@ -127,3 +129,4 @@ class Assistant:
 if __name__ == "__main__":
     assistant = Assistant()
     assistant.main()
+

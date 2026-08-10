@@ -74,6 +74,10 @@ class SujetsActionneurs(StrEnum):
     GARAGE_LUMIERE_CMD          = "maison/garage/lumiere/cmd"
     GARAGE_LUMIERE_ETAT         = "maison/garage/lumiere/etat"
 
+# --- Sujet MQTT du journal vocal (Projet 2) ---
+# L'assistant y publie chaque interaction pour affichage dans Node-RED.
+SUJET_JOURNAL_VOCAL = "maison/assistant/journal"
+
 # --- Correspondance type de capteur → table SQL (Projet 2) ---
 TABLES_CAPTEURS = {
     # Salon
