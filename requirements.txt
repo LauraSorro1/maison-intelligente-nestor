@@ -12,3 +12,5 @@ pyaudio>=0.2.14
 # après le premier runAndWait() (bug connu du moteur SAPI5)
 pyttsx3==2.71
 nltk>=3.9
+
+python-dotenv==1.0.1

@@ -3,9 +3,17 @@
 Toute la configuration (courtier MQTT, base de données, sujets MQTT) est
 centralisée ici afin que les capteurs, les actionneurs et le contrôleur
 parlent tous le même langage.
+
+Le mot de passe de la base est lu dans le fichier .env (non versionné) :
+voir .env.exemple pour le modèle à copier.
 """
 
+import os
 from enum import StrEnum
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # --- Courtier MQTT (Mosquitto) ---
 MQTT_HOST = "localhost"
@@ -13,11 +21,14 @@ MQTT_PORT = 1883
 
 # --- Base de données MariaDB ---
 # Ajustés selon mon installation locale.
-DB_HOST = "localhost"  
+DB_HOST = "localhost"
 DB_USER = "root"
-DB_PASSWORD = "***RETIRE***"
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = "maison"
 DB_PORT = 3306
+
+if not DB_PASSWORD:
+    raise RuntimeError("DB_PASSWORD absent : copier .env.exemple en .env")
 
 # --- Sujets MQTT des capteurs (publieurs) ---
 class SujetsCapteurs(StrEnum):
@@ -82,3 +93,5 @@ TABLES_CAPTEURS = {
     "vehicule_garage":          "lectures_vehicule_garage",
     "barcode_garage":           "lectures_barcode_garage",
 }
+
+
