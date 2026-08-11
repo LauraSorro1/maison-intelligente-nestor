@@ -1,11 +1,14 @@
 from assistant.intentions import analyser, normaliser
 from assistant.maison_mqtt import MaisonMQTT
+from assistant.voix import Oreille, parler
 from basededonnees.db import BaseDeDonnees
 
 # * DONE: définir un mot-clé pour activer l'assistant vocal (ex: "maison", "assistant", "robot", etc.)
-# Mot-cle d'activation : « Merlin » — l'enchanteur qui commande d'une parole.
-# Mot francais natif : bien prononce par pyttsx3 ET bien reconnu par Google Speech.
-MOT_CLE = "merlin"
+# Mot-cle d'activation : « Nestor ». « Merlin » a ete abandonne — son homophone
+# « merlan » est un nom commun, que le modele de langue de Google prefere
+# systematiquement a un prenom rare. Nestor n'a aucun homophone, et mesure
+# 5/5 au banc d'essai (test_mot_cle.py) contre 4/5 a Merlin et 3/5 a Victor.
+MOT_CLE = "nestor"
 
 # Nom officiel de l'actionneur -> nom naturel pour les reponses vocales
 NOMS_ACTIONNEURS = {
@@ -14,18 +17,48 @@ NOMS_ACTIONNEURS = {
     "entree_serrure": "la serrure de l'entrée",
 }
 
+# Actionneurs dont une commande doit etre confirmee avant execution.
+CIBLES_A_CONFIRMER = ("entree_serrure",)
+
+# Etat deja atteint -> phrase de constat, aucune commande publiee.
+DEJA_DANS_ETAT = {
+    "aquarium_pompe": {"ON": "La pompe de l'aquarium est déjà allumée.",
+                       "OFF": "La pompe de l'aquarium est déjà éteinte."},
+    "aquarium_uv":    {"ON": "La lumière UV de l'aquarium est déjà allumée.",
+                       "OFF": "La lumière UV de l'aquarium est déjà éteinte."},
+    "entree_serrure": {"ON": "La serrure de l'entrée est déjà verrouillée.",
+                       "OFF": "La serrure de l'entrée est déjà déverrouillée."},
+}
+
+# Un message distinct par type d'echec de capture (seance 10).
+MESSAGES_ECHEC = {
+    "SILENCE":   "Je n'ai rien entendu.",
+    "INCOMPRIS": "Je n'ai pas compris. Pouvez-vous répéter ?",
+    "RESEAU":    "Le service de reconnaissance est indisponible pour le moment.",
+}
+
+NB_TENTATIVES = 3
+
+# Reponses acceptees a une demande de confirmation (apres normalisation).
+MOTS_OUI = ("oui", "ouais", "confirme", "vas y", "d accord")
+MOTS_NON = ("non", "annule", "annuler", "laisse", "stop", "arrete")
+
 
 class Assistant:
     def __init__(self):
         self.maison = MaisonMQTT()
         self.maison.demarrer()
         self.db = BaseDeDonnees()
-    
-    def executer_intention(self, intention):
+        self.oreille = None
+
+    def executer_intention(self, intention, phrase=""):
         """Execute l'intention (MQTT ou lecture capteur) et construit la reponse."""
         if intention["type"] == "ACTION":
             actionneur = intention["cible"]
             action = intention["action"]
+
+            if self.maison.deja_dans_etat(actionneur, action):
+                return DEJA_DANS_ETAT[actionneur][action]
 
             self.maison.commander(actionneur, action)   # bug corrigé : « appareil » n'existait pas
 
@@ -49,10 +82,62 @@ class Assistant:
             elif capteur == "temperature_salon":
                 return f"Il fait {valeur} degrés Celsius dans le salon."
 
-        return "Désolé, je n'ai pas compris votre demande."
+        return f"Désolé, je n'ai pas compris : {phrase}."
+
+    def formuler_confirmation(self, intention):
+        """Formule la question de confirmation d'une ACTION sensible."""
+        nom = NOMS_ACTIONNEURS[intention["cible"]]
+        verbe = "verrouille" if intention["action"] == "ON" else "déverrouille"
+        return f"Voulez-vous que je {verbe} {nom} ? Répondez par oui ou par non."
+
+    def demander_confirmation(self, intention):
+        """Pose la question et retourne True seulement sur un oui explicite."""
+        parler(self.formuler_confirmation(intention))
+
+        for tentative in range(NB_TENTATIVES):
+            reponse, echec = self.oreille.ecouter_commande()
+
+            if echec is not None:
+                parler(MESSAGES_ECHEC[echec])
+
+                if echec == "RESEAU":
+                    return False
+
+                continue
+
+            mots = normaliser(reponse)
+
+            if any(mot in mots for mot in MOTS_OUI):
+                return True
+
+            if any(mot in mots for mot in MOTS_NON):
+                return False
+
+            parler("Répondez simplement par oui ou par non.")
+
+        parler("Dans le doute, je préfère ne rien faire.")
+        return False
+
+    def obtenir_commande(self):
+        """Capture une commande en NB_TENTATIVES essais. Retourne le texte ou None."""
+        for tentative in range(NB_TENTATIVES):
+            phrase, echec = self.oreille.ecouter_commande()
+
+            if echec is None:
+                return phrase
+
+            parler(MESSAGES_ECHEC[echec])
+
+            if echec == "RESEAU":
+                return None
+
+        parler("Je vous laisse. Rappelez-moi quand vous voulez.")
+        return None
 
     def traiter_phrase(self, phrase):
         """Analyse une phrase, execute l'intention et retourne la reponse."""
+        # Source de verite unique : on journalise exactement ce qui est analyse.
+        phrase = normaliser(phrase)
         intention = analyser(phrase)
 
         # * DONE: Journaliser la commande recue (ou son rejet si INCONNUE) en utilisant self.db.inserer("nom_table", {"colonne": valeur, ...})
@@ -62,8 +147,18 @@ class Assistant:
             "cible": intention.get("cible"),
             "action": intention.get("action"),
         })
-        
-        reponse = self.executer_intention(intention)
+
+        if (intention["type"] == "ACTION"
+                and intention["cible"] in CIBLES_A_CONFIRMER
+                and not self.maison.deja_dans_etat(intention["cible"], intention["action"])):
+            if not self.demander_confirmation(intention):
+                reponse = "Très bien, je n'ai rien fait."
+            else:
+                reponse = self.executer_intention(intention, phrase)
+
+        else:
+            reponse = self.executer_intention(intention, phrase)
+
         if reponse is None:
             reponse = "Désolé, je n'ai pas compris votre demande."
 
@@ -75,18 +170,16 @@ class Assistant:
         self.maison.publier_interaction(phrase, intention["type"], reponse)
 
         return reponse
-        
+
     def main(self):
         """Boucle principale : mot-cle, capture de phrase, reponse vocale."""
-        from assistant.voix import Oreille, parler
-
-        oreille = Oreille()
+        self.oreille = Oreille()
 
         parler(f"Assistant vocal démarré. Dites « {MOT_CLE} » pour m'appeler.")
 
         try:
             while True:
-                texte = oreille.ecouter()
+                texte = self.oreille.ecouter()
 
                 if texte is None:
                     continue
@@ -106,10 +199,9 @@ class Assistant:
 
                 else:
                     parler("Oui, je vous écoute.")
-                    phrase = oreille.ecouter(timeout=5)
+                    phrase = self.obtenir_commande()
 
                     if phrase is None:
-                        parler("Je n'ai rien entendu.")
                         continue
 
                 reponse = self.traiter_phrase(phrase)
@@ -129,4 +221,3 @@ class Assistant:
 if __name__ == "__main__":
     assistant = Assistant()
     assistant.main()
-

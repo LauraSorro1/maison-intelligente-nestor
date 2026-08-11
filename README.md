@@ -1,4 +1,4 @@
-# Maison intelligente simulée + assistant vocal « Merlin »
+# Maison intelligente simulée + assistant vocal « Nestor »
 
 Cours **420-315-AH — Développement d'objets intelligents**
 Étudiante : **Laura Sorro** — Collège Ahuntsic, session été 2026
@@ -12,7 +12,7 @@ Le dépôt contient deux couches successives d'un même système :
 | | Contenu | Apport |
 |---|---|---|
 | **Projet 1** | Maison connectée simulée : 3 pièces (Salon, Entrée, Garage) + aquarium, 12 capteurs, 9 actionneurs, contrôleur à règles automatiques, tableau de bord Node-RED | Infrastructure MQTT |
-| **Projet 2** | Assistant vocal francophone « Merlin » greffé sur cette infrastructure, et persistance MariaDB des lectures et des interactions | Voix + base de données |
+| **Projet 2** | Assistant vocal francophone « Nestor » greffé sur cette infrastructure, et persistance MariaDB des lectures et des interactions | Voix + base de données |
 
 Le Projet 2 est documenté en premier, car c'est la couche active. Le Projet 1 suit
 comme référence technique de l'infrastructure sous-jacente.
@@ -20,9 +20,9 @@ comme référence technique de l'infrastructure sous-jacente.
 ---
 ---
 
-# PROJET 2 — Assistant vocal « Merlin »
+# PROJET 2 — Assistant vocal « Nestor »
 
-Merlin écoute au micro, reconnaît un mot-clé, analyse l'intention de la phrase,
+Nestor écoute au micro, reconnaît un mot-clé, analyse l'intention de la phrase,
 commande les actionneurs réels via MQTT, répond à voix haute, et journalise chaque
 interaction dans MariaDB ainsi que dans un tableau de bord Node-RED.
 
@@ -47,6 +47,9 @@ graph LR
     MM -->|publish : maison/entree/serrure/cmd| M
     M -->|subscribe : maison/salon/temperature| MM
     M -->|subscribe : maison/salon/aquarium/temperature| MM
+    M -->|subscribe : maison/salon/aquarium/pompe/etat| MM
+    M -->|subscribe : maison/salon/aquarium/uv/etat| MM
+    M -->|subscribe : maison/entree/serrure/etat| MM
 
     M -->|subscribe| A3[pompe aquarium]
     M -->|subscribe| A4[UV aquarium]
@@ -83,21 +86,41 @@ widget. Séparer les racines garantit à chaque flux un périmètre exclusif.
 | tout autre cas | `INCONNUE` |
 
 Conséquence : l'ordre des mots n'a aucune importance, et aucune formule
-interrogative n'est nécessaire. « Merlin, le salon » suffit à obtenir la
-température du salon ; « Merlin, quelle est la température ? » sans nom de pièce
+interrogative n'est nécessaire. « Nestor, le salon » suffit à obtenir la
+température du salon ; « Nestor, quelle est la température ? » sans nom de pièce
 retourne INCONNUE.
 
-Le mot-clé peut être suivi directement de la commande, ou prononcé seul — Merlin
+Le mot-clé peut être suivi directement de la commande, ou prononcé seul — Nestor
 répond alors « Oui, je vous écoute » et attend la phrase pendant 5 secondes.
 
-### 2.2 Le mot-clé : « Merlin »
+### 2.2 Le mot-clé : « Nestor »
 
-| Critère | Justification |
-|---|---|
-| Prononciation | Mot français natif, correctement synthétisé par pyttsx3 en voix fr-CA |
-| Reconnaissance | Bien transcrit par Google Speech fr-FR, contrairement à « Gandalf » (anglicisme mal rendu) |
-| Distinction | Deux syllabes nettes, aucun mot proche dans le vocabulaire domotique |
-| Robustesse | Les transcriptions erronées (« Bernard », « Berlin », « merlan ») ne contiennent pas le mot-clé : elles sont filtrées sans effet de bord |
+Le mot-clé a été choisi **par mesure, pas par intuition**. Le banc d'essai
+`test_mot_cle.py` fait prononcer chaque candidat cinq fois et compte les
+transcriptions qui contiennent effectivement le mot après normalisation.
+
+| Candidat | Score | Échec observé |
+|---|---|---|
+| **Nestor** | **5/5** | aucun |
+| Athéna | 4/5 | « athén » — phrase tronquée, pas une erreur de modèle |
+| Merlin | 4/5 | « Merlan » |
+| Victor | 3/5 | « pita », et une capture vide |
+
+**Pourquoi Merlin a été écarté.** « Merlan » est un nom commun français. Le modèle
+de langue de Google privilégie systématiquement un nom commun fréquent sur un prénom
+rare quand les deux sont phonétiquement identiques. L'échec n'était donc pas
+accidentel : il se reproduisait, et aucun réglage du micro ne pouvait le corriger.
+« Gandalf » avait été écarté plus tôt, pour une raison différente — anglicisme mal
+rendu par la synthèse vocale française.
+
+**Pourquoi Nestor.** Aucun homophone en nom commun, deux syllabes nettes, aucun mot
+proche dans le vocabulaire domotique, et une prononciation correcte par pyttsx3 en
+voix fr-CA. Les transcriptions erronées (« Bernard », « Berlin ») ne contiennent pas
+le mot-clé : elles sont filtrées sans effet de bord.
+
+> Les scores d'Athéna et de Victor ont été mesurés **avant** la correction de
+> `dynamic_energy_threshold` (§ 5.4) : leurs échecs étaient des captures tronquées,
+> pas des erreurs de reconnaissance. Celui de Merlin, lui, aurait persisté.
 
 ### 2.3 Verbes reconnus
 
@@ -144,17 +167,23 @@ clé du dictionnaire.
 
 ### 2.5 Phrases-types
 
-| Phrase prononcée | Type | Réponse de Merlin |
+| Phrase prononcée | Type | Réponse de Nestor |
 |---|---|---|
-| Merlin, quelle est la température de l'aquarium ? | REQUETE | La température de l'aquarium est de 24.2 degrés Celsius. |
-| Merlin, donne-moi la température du salon | REQUETE | Il fait 21.5 degrés Celsius dans le salon. |
-| Merlin, éteins la pompe s'il te plaît | ACTION | J'éteins la pompe de l'aquarium. |
-| Merlin, peux-tu allumer l'UV | ACTION | J'allume la lumière UV de l'aquarium. |
-| Merlin, verrouille la porte | ACTION | Je verrouille la serrure de l'entrée. |
-| Merlin, déverrouille le verrou | ACTION | Je déverrouille la serrure de l'entrée. |
-| Merlin, allume la pomme | INCONNUE | Désolé, je n'ai pas compris votre demande. |
+| Nestor, quelle est la température de l'aquarium ? | REQUETE | La température de l'aquarium est de 24.2 degrés Celsius. |
+| Nestor, donne-moi la température du salon | REQUETE | Il fait 21.5 degrés Celsius dans le salon. |
+| Nestor, éteins la pompe s'il te plaît | ACTION | J'éteins la pompe de l'aquarium. |
+| Nestor, peux-tu allumer l'UV | ACTION | J'allume la lumière UV de l'aquarium. |
+| Nestor, verrouille la porte | ACTION | Voulez-vous que je verrouille la serrure de l'entrée ? *(confirmation — § 2.8)* |
+| Nestor, verrouille la porte *(déjà verrouillée)* | ACTION | La serrure de l'entrée est déjà verrouillée. *(aucun message MQTT — § 3.4)* |
+| Nestor, déverrouille le verrou | ACTION | Voulez-vous que je déverrouille la serrure de l'entrée ? |
+| Nestor, allume la pomme | INCONNUE | Désolé, je n'ai pas compris : allume la pomme. |
 
-> **Cas limite à connaître.** « Merlin, éteins la lumière du salon » est analysée
+La phrase rejetée est **répétée** dans la réponse : c'est ce qui permet à
+l'utilisateur de comprendre *pourquoi* sa commande a échoué. Les commandes reconnues
+ne sont pas répétées — la réponse elle-même (« J'éteins la pompe de l'aquarium »)
+nomme déjà l'action et sa cible.
+
+> **Cas limite à connaître.** « Nestor, éteins la lumière du salon » est analysée
 > comme une REQUETE ? Non : « eteins » est un verbe d'action, mais « lumiere » ne
 > figure pas dans `ACTIONNEURS` — et bien que « salon » soit un capteur, la branche
 > REQUETE exige l'absence de verbe d'action. Le résultat est donc INCONNUE, ce qui
@@ -167,7 +196,7 @@ clé du dictionnaire.
 
 | # | Étape | Effet |
 |---|---|---|
-| 1 | minuscules | « Merlin » ≡ « merlin » |
+| 1 | minuscules | « Nestor » ≡ « nestor » |
 | 2 | décomposition NFD + retrait des diacritiques | « éteins » → « eteins » |
 | 3 | apostrophes et tirets → espaces | « s'il » → « s il », « peux-tu » → « peux tu » |
 | 4 | retrait des formules de politesse (regex `POLITESSE`) | « s il te plait » disparaît |
@@ -188,7 +217,60 @@ La tokenisation utilise `nltk.word_tokenize(language="french")`. Le corpus
 > **Pourquoi les phrases journalisées sont sans accents.** C'est la phrase
 > *normalisée* qui est enregistrée, car c'est elle que l'assistant a réellement
 > analysée. Journaliser le texte brut donnerait une trace différente de ce qui a été
-> traité, ce qui rendrait le débogage trompeur.
+> traité, ce qui rendrait le débogage trompeur. `traiter_phrase()` appelle
+> `normaliser()` **en entrée**, si bien que la trace est identique quel que soit le
+> chemin suivi par la commande (§ 7).
+
+### 2.7 Gestion des échecs de capture
+
+Une capture peut échouer de trois façons, et chacune reçoit un message distinct.
+**Aucun échec n'est silencieux.**
+
+| Exception | Cause | Message | Réessai |
+|---|---|---|---|
+| `WaitTimeoutError` | aucun son avant la fin du `timeout` | « Je n'ai rien entendu. » | oui |
+| `UnknownValueError` | son capté, transcription impossible | « Je n'ai pas compris. Pouvez-vous répéter ? » | oui |
+| `RequestError` | service de reconnaissance injoignable | « Le service de reconnaissance est indisponible pour le moment. » | **non** |
+
+**Pourquoi `RequestError` n'est pas réessayé.** Les deux premiers échecs viennent de
+l'utilisateur ou de son environnement : répéter a une chance d'aboutir. Le troisième
+vient du réseau. Réessayer trois fois un service tombé ferait attendre l'utilisateur
+une quinzaine de secondes pour un résultat certain d'avance.
+
+**Trois tentatives, puis abandon.** Après trois captures infructueuses, Nestor dit
+« Je vous laisse. Rappelez-moi quand vous voulez » et retourne à la veille du
+mot-clé. L'utilisateur n'est jamais bloqué dans une boucle.
+
+**La fonction de capture ne parle jamais.** `_capter()` retourne le couple
+`(texte, echec)` et c'est l'appelant qui décide du message. La veille du mot-clé
+utilise `ecouter()`, qui jette la cause de l'échec : commenter chaque bruit ambiant
+non compris rendrait l'assistant intenable.
+
+> `_capter()` est la **seule** fonction du projet qui accède au micro. `ecouter()` et
+> `ecouter_commande()` ne font que filtrer son résultat.
+
+### 2.8 Confirmation avant action
+
+Toute action n'a pas le même enjeu. Le principe retenu :
+
+| Type de commande | Traitement | Justification |
+|---|---|---|
+| Requête d'état | exécutée directement | Une température lue n'a aucune conséquence |
+| Action sur la pompe ou l'UV | exécutée directement | Réversible d'une phrase, aucun enjeu de sécurité |
+| Action sur la serrure | **confirmation oui/non** | Seul actionneur touchant à la sécurité du domicile |
+
+La confirmation accepte plusieurs formulations (`oui`, `ouais`, `confirme`, `vas-y` /
+`non`, `annule`, `laisse`, `stop`). Une réponse hors-sujet déclenche une relance
+« Répondez simplement par oui ou par non ». Après trois tentatives sans réponse
+exploitable, Nestor dit « Dans le doute, je préfère ne rien faire » : **en cas
+d'incertitude, l'inaction est le comportement sûr.**
+
+Un refus laisse malgré tout une ligne dans `journal_commandes` : la commande a bien
+été entendue et comprise, seule l'exécution n'a pas eu lieu. C'est consultable en
+base.
+
+> Confirmer *chaque* commande aurait doublé la durée de chaque échange sans
+> bénéfice : c'est le dosage, pas la systématicité, qui rend la confirmation utile.
 
 ---
 
@@ -236,6 +318,33 @@ parle « verrouille/deverrouille », les autres « allume/eteint ».
 > rallumerait aussitôt. Ce sont aussi des objets **uniques** dans la maison : aucune
 > ambiguïté de pièce à lever dans la phrase.
 
+### 3.4 États des actionneurs (subscribe)
+
+| Sujet | Nom interne |
+|---|---|
+| `maison/salon/aquarium/pompe/etat` | `aquarium_pompe` |
+| `maison/salon/aquarium/uv/etat` | `aquarium_uv` |
+| `maison/entree/serrure/etat` | `entree_serrure` |
+
+Ces sujets sont publiés par les actionneurs avec `retain=True` (choix du Projet 1,
+§ Bonus #4). Conséquence directe : **le courtier livre l'état courant dès la
+connexion de l'assistant**, sans attendre le prochain changement. Nestor connaît donc
+l'état de ses trois actionneurs avant même la première commande.
+
+`deja_dans_etat(appareil, action)` compare l'état reçu à la commande que l'action
+produirait. Si les deux coïncident, Nestor répond par un constat (« La serrure de
+l'entrée est déjà verrouillée »), **ne publie aucun message MQTT**, et ne demande pas
+de confirmation — confirmer une action sans effet n'aurait aucun sens.
+
+**Si l'état est inconnu, la commande est envoyée.** Un actionneur qui n'a jamais
+publié laisse `deja_dans_etat()` retourner `False`. Refuser d'agir par ignorance
+serait pire qu'envoyer une commande redondante — que l'actionneur absorbe de toute
+façon sans changer d'état.
+
+> Cette vérification est un **confort d'usage, pas une protection** :
+> `base_actionneur.py` gère déjà l'idempotence de son côté (une commande identique à
+> l'état courant ne produit aucune transition).
+
 ---
 
 ## 4. Base de données
@@ -246,7 +355,7 @@ Base `maison`, **14 tables** créées automatiquement au premier appel :
 12 tables de lectures de capteurs (une par entrée de `config.TABLES_CAPTEURS`,
 alimentées par le contrôleur) et 2 tables de journalisation vocale.
 
-**`journal_commandes`** — ce que Merlin a *entendu et compris*
+**`journal_commandes`** — ce que Nestor a *entendu et compris*
 
 | Colonne | Type | Nullable | Justification |
 |---|---|---|---|
@@ -257,7 +366,7 @@ alimentées par le contrôleur) et 2 tables de journalisation vocale.
 | `action` | `VARCHAR(8)` | **oui** | NULL pour une REQUETE ou une INCONNUE : seules les ACTIONs portent ON/OFF |
 | `horodatage` | `DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP` | non | Rempli par le SGBD |
 
-**`journal_reponses`** — ce que Merlin a *dit*
+**`journal_reponses`** — ce que Nestor a *dit*
 
 | Colonne | Type | Nullable | Justification |
 |---|---|---|---|
@@ -352,15 +461,24 @@ DB_PASSWORD=votre_mot_de_passe_mariadb
 `config.py` le lit via `os.getenv()` et lève une erreur explicite si la variable est
 absente. Le fichier `.env` est ignoré par Git.
 
-### 5.4 Voix de synthèse
+### 5.4 Voix de synthèse et réglages d'écoute
 
 `voix.py` cible la voix **Microsoft Claude (fr-CA)**, avec repli automatique sur la
 première voix française disponible si elle est absente du système. Le moteur pyttsx3
 est initialisé **une seule fois** au niveau du module (`init()` prend environ une
 seconde).
 
-Le `pause_threshold` de l'écoute est porté à **1,2 s** (défaut : 0,8 s), qui coupait
-les phrases longues avant leur fin.
+Trois réglages du `Recognizer`, chacun pour une raison précise :
+
+| Réglage | Valeur | Raison |
+|---|---|---|
+| `pause_threshold` | 1,5 s | Le défaut (0,8 s) coupait les phrases sur les pauses naturelles |
+| `dynamic_energy_threshold` | `False` | Le seuil se réajustait **pendant** la phrase et coupait la fin quand la voix baissait (« éteins la pompe s'il… ») |
+| `adjust_for_ambient_noise` | 2 s | Calibration plus fiable, puisque le seuil est ensuite figé |
+
+Durées d'écoute : `timeout=5 s` (délai avant le premier son) et
+`phrase_time_limit=8 s` (durée maximale d'une phrase). Mesurées sur les phrases-types
+du § 2.5, dont la plus longue dure environ 3 secondes.
 
 ---
 
@@ -381,7 +499,7 @@ py -3.13 -m actionneurs.actionneur_aquarium_pompe
 py -3.13 -m actionneurs.actionneur_aquarium_uv
 py -3.13 -m actionneurs.actionneur_entree_serrure
 
-# Terminal 7 — Merlin
+# Terminal 7 — Nestor
 py -3.13 -m assistant.assistant
 ```
 
@@ -397,14 +515,27 @@ py -3.13 test_intentions.py
 
 6 phrases, 6 analyses attendues : 3 ACTION, 2 REQUETE, 1 INCONNUE.
 
+### Banc d'essai du mot-clé
+
+Avec micro, sans courtier ni base :
+
+```powershell
+py -3.13 test_mot_cle.py
+```
+
+Chaque candidat est prononcé 5 fois ; le script compte les transcriptions contenant
+le mot après normalisation. Résultats : § 2.2.
+
 ### Tableau de bord
 
-Le groupe **Assistant vocal** (page « Maison ») affiche les 15 dernières
-interactions, horodatées, avec le type d'intention et la réponse.
+Deux pages :
 
-> L'historique est conservé dans le contexte de flux Node-RED : il est vidé à chaque
-> `Deploy` et à chaque redémarrage. C'est voulu — la liste se remplit en direct
-> pendant la démonstration.
+- **Démo** — le groupe *Assistant vocal* (journal des 15 dernières interactions), les deux capteurs interrogeables et les trois actionneurs commandables. C'est la page utilisée pour la démonstration : elle ne montre que ce qui est actif.
+- **Maison** — l'infrastructure complète du Projet 1.
+
+> L'historique du journal vocal est conservé dans le contexte de flux Node-RED : il
+> est vidé à chaque `Deploy` et à chaque redémarrage. C'est voulu — la liste se
+> remplit en direct pendant la démonstration.
 
 ---
 
@@ -413,12 +544,18 @@ interactions, horodatées, avec le type d'intention et la réponse.
 L'assistant imprime en continu ce qu'il **entend** et ce qu'il **répond** :
 
 ```
-Entendu : Merlin quelle est la temperature de l aquarium
-Assistant : La température de l'aquarium est de 24.23 degrés Celsius.
+Entendu : Nestor quelle est la temperature de l aquarium
+Assistant : La température de l'aquarium est de 23.09 degrés Celsius.
 ```
 
 Les phrases sans mot-clé apparaissent aussi (`Entendu :` sans `Assistant :`) : c'est
 ce qui rend visible le filtrage du mot-clé.
+
+**Les phrases journalisées sont normalisées, quel que soit le chemin.**
+`traiter_phrase()` appelle `normaliser()` en entrée : que la commande ait suivi le
+mot-clé dans la même phrase ou qu'elle ait été captée séparément, c'est exactement le
+texte analysé qui est enregistré. Journaliser le texte brut dans un cas et normalisé
+dans l'autre rendrait le débogage trompeur.
 
 Vérifier la journalisation en base :
 
@@ -437,6 +574,27 @@ SELECT * FROM maison.journal_reponses  ORDER BY horodatage DESC LIMIT 10;
 | `assistant/assistant.py` | Variable `appareil` inexistante dans `executer_intention()` | Renommée `actionneur` |
 | `assistant/maison_mqtt.py` | `on_connect` à 4 paramètres, incompatible avec `CallbackAPIVersion.VERSION2` | Signature portée à 5 paramètres (`reason_code`, `properties`) |
 | `assistant/assistant.py` | `self.arreter()` appelé hors de la classe, en fin de fichier | Ligne supprimée — `main()` appelle déjà `self.arreter()` |
+
+---
+
+## 9. Évolutions possibles
+
+**Consigne de température (setpoint).** Piloter la thermopompe à la voix (« mets 22
+degrés ») demanderait plus qu'une commande supplémentaire. Les règles 3 à 5 du
+contrôleur comparent la température à des seuils codés en dur et republient leur
+décision toutes les deux secondes : une commande vocale serait écrasée dans la
+seconde. Il faudrait introduire un sujet de consigne, que le contrôleur lirait à la
+place de ses seuils, et gérer sa persistance. C'est un changement d'architecture du
+contrôleur, pas un ajout à l'assistant — raison pour laquelle la thermopompe est
+restée hors du périmètre vocal (voir aussi le choix du trio « zéro conflit », § 3.3).
+
+**Deuxième grandeur par pièce.** Les capteurs sont identifiés par leur seul mot de
+lieu (§ 2.4). Ajouter l'humidité du salon obligerait à analyser aussi le nom de la
+grandeur, donc à étendre la clé du dictionnaire `CAPTEURS`.
+
+**Persistance de l'historique Node-RED.** Le journal vocal du tableau de bord vit
+dans le contexte de flux, vidé à chaque `Deploy`. Le lire depuis `journal_commandes`
+plutôt que depuis la mémoire de flux le rendrait permanent.
 
 ---
 ---
@@ -658,7 +816,7 @@ bordure change selon l'état : 🟢 normal, 🟡 attention (thermopompe active),
 
 - **QoS 0** pour les capteurs : publication fréquente (2 s), une valeur perdue est sans conséquence
 - **QoS 2** pour les abonnements des actionneurs : une commande doit être exécutée exactement une fois
-- **retain=True** sur tous les sujets capteurs et états actionneurs : le tableau de bord affiche une valeur dès l'ouverture
+- **retain=True** sur tous les sujets capteurs et états actionneurs : le tableau de bord affiche une valeur dès l'ouverture — et l'assistant vocal connaît l'état de ses actionneurs dès sa connexion (§ 3.4)
 - **LWT** sur chaque capteur : en cas de déconnexion brutale, le courtier publie automatiquement `{"etat":"hors-ligne"}` sur le sujet `/sante`
 
 ### Bonus retirés
@@ -685,12 +843,13 @@ projet1-420-315-E26/
 ├── requirements.txt
 ├── flows.json                          Flux Node-RED exportés
 ├── test_intentions.py                  Banc d'essai de l'analyse
+├── test_mot_cle.py                     Banc d'essai des mots-clés candidats
 ├── assistant/                          ── PROJET 2 ──
 │   ├── __init__.py
-│   ├── assistant.py                    Boucle principale, mot-clé, journalisation
+│   ├── assistant.py                    Boucle principale, mot-clé, tentatives, confirmation, journalisation
 │   ├── intentions.py                   normaliser / tokeniser / analyser
-│   ├── maison_mqtt.py                  commander, lire, publier_interaction
-│   └── voix.py                         Oreille (écoute) + parler (synthèse)
+│   ├── maison_mqtt.py                  commander, lire, deja_dans_etat, publier_interaction
+│   └── voix.py                         Oreille (_capter / ecouter / ecouter_commande) + parler
 ├── basededonnees/                      ── PROJET 2 ──
 │   ├── __init__.py
 │   └── db.py                           Connexion paresseuse + inserer()

@@ -2,11 +2,13 @@ import paho.mqtt.client as mqtt
 import config
 import json
 
+
 class MaisonMQTT:
     """Pont entre l'assistant vocal et l'infrastructure MQTT du Projet 1.
 
     - Publie les commandes ON/OFF sur les topics des actionneurs.
     - S'abonne aux topics des capteurs et retient la derniere valeur connue.
+    - S'abonne aux topics d'etat des actionneurs (retenus par le courtier).
     """
 
     def __init__(self):
@@ -25,7 +27,16 @@ class MaisonMQTT:
             "entree_serrure": config.SujetsActionneurs.ENTREE_SERRURE_CMD.value,
         }
 
+        # Sujet d'etat -> nom officiel de l'actionneur. Ces sujets sont publies
+        # avec retain=True : le courtier livre l'etat courant des la connexion.
+        self.topics_etats = {
+            config.SujetsActionneurs.SALON_AQUARIUM_POMPE_ETAT.value: "aquarium_pompe",
+            config.SujetsActionneurs.SALON_AQUARIUM_UV_ETAT.value:    "aquarium_uv",
+            config.SujetsActionneurs.ENTREE_SERRURE_ETAT.value:       "entree_serrure",
+        }
+
         self.dernieres_valeurs = {}
+        self.derniers_etats = {}
 
         self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="assistant-maison")
 
@@ -38,6 +49,8 @@ class MaisonMQTT:
             # * DONE: S'abonner aux topics des capteurs
             for topic in self.topics_capteurs.keys():
                 client.subscribe(topic)
+            for topic in self.topics_etats.keys():
+                client.subscribe(topic)
         else:
             print(f"Erreur de connexion : {reason_code}")
 
@@ -47,6 +60,13 @@ class MaisonMQTT:
         if capteur:
             msg = message.payload.decode()
             self.dernieres_valeurs[capteur] = json.loads(msg).get("valeur")
+            return
+
+        actionneur = self.topics_etats.get(message.topic)
+
+        if actionneur:
+            msg = message.payload.decode()
+            self.derniers_etats[actionneur] = json.loads(msg).get("etat")
 
     def demarrer(self):
         self.client.connect(config.MQTT_HOST, config.MQTT_PORT)
@@ -84,3 +104,15 @@ class MaisonMQTT:
     def lire(self, capteur):
         """Retourne la derniere valeur connue du capteur (ou None)."""
         return self.dernieres_valeurs.get(capteur)
+
+    def deja_dans_etat(self, appareil, action):
+        """Vrai si l'actionneur est deja dans l'etat que la commande viserait.
+
+        Retourne False si l'etat est inconnu : dans le doute, on commande.
+        """
+        etat = self.derniers_etats.get(appareil)
+
+        if etat is None:
+            return False
+
+        return etat == self.COMMANDES.get(appareil, {}).get(action)

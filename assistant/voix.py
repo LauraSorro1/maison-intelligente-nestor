@@ -30,18 +30,25 @@ class Oreille:
 
     def __init__(self):
         self.recognizer = sr.Recognizer()
-        # Tolerance aux pauses naturelles : on attend 1,2 s de silence avant
+        # Tolerance aux pauses naturelles : on attend 1,5 s de silence avant
         # de considerer la phrase terminee (defaut 0,8 s — coupait les phrases).
-        self.recognizer.pause_threshold = 1.2
+        self.recognizer.pause_threshold = 1.5
+        # Seuil fige apres calibration : sinon il se reajuste PENDANT la phrase
+        # et coupe la fin quand la voix baisse.
+        self.recognizer.dynamic_energy_threshold = False
         self.micro = sr.Microphone()
 
-        print("Calibration du micro (silence pendant 1 seconde)...")
+        print("Calibration du micro (silence pendant 2 secondes)...")
 
         with self.micro as source:
-            self.recognizer.adjust_for_ambient_noise(source, duration=1)
+            self.recognizer.adjust_for_ambient_noise(source, duration=2)
 
-    def ecouter(self, timeout=None, limite=8):
-        """Ecoute une phrase et retourne le texte reconnu (ou None)."""
+    def _capter(self, timeout, limite):
+        """Capture unique. Retourne (texte, echec).
+
+        echec vaut None en cas de succes, sinon "SILENCE", "INCOMPRIS"
+        ou "RESEAU". Cette fonction ne parle jamais : l'appelant decide.
+        """
         try:
             with self.micro as source:
                 audio = self.recognizer.listen(
@@ -51,16 +58,25 @@ class Oreille:
                 )
 
         except sr.WaitTimeoutError:
-            return None
+            return None, "SILENCE"
 
         try:
             texte = self.recognizer.recognize_google(audio, language="fr-FR")
             print(f"Entendu : {texte}")
-            return texte
+            return texte, None
 
         except sr.UnknownValueError:
-            return None
+            return None, "INCOMPRIS"
 
         except sr.RequestError as erreur:
             print(f"Erreur du service de reconnaissance : {erreur}")
-            return None
+            return None, "RESEAU"
+
+    def ecouter(self, timeout=5, limite=8):
+        """Veille du mot-cle : retourne le texte reconnu, ou None."""
+        texte, _ = self._capter(timeout, limite)
+        return texte
+
+    def ecouter_commande(self, timeout=5, limite=8):
+        """Capture d'une commande : retourne (texte, echec)."""
+        return self._capter(timeout, limite)
