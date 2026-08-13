@@ -61,7 +61,7 @@ class Oreille:
             return None, "SILENCE"
 
         try:
-            texte = self.recognizer.recognize_google(audio, language="fr-FR")
+            texte = self.recognizer.recognize_google(audio, language="fr-CA")
             print(f"Entendu : {texte}")
             return texte, None
 

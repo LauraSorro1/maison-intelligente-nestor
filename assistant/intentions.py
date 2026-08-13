@@ -68,7 +68,7 @@ def tokeniser(texte):
     return nltk.word_tokenize(texte, language="french")
 
 
-def trouver_action(texte, tokens):
+def trouver_action(tokens):
     """Cherche un verbe d'action (ON ou OFF) dans la phrase."""
     for token in tokens:
         if token in VERBES_ON:
@@ -89,7 +89,7 @@ def analyser(phrase):
     texte = normaliser(phrase)
     tokens = tokeniser(texte)
 
-    action = trouver_action(texte, tokens)
+    action = trouver_action(tokens)
 
     actionneur = None
     capteur = None

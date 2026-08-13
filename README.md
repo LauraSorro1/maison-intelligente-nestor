@@ -25,6 +25,7 @@ comme référence technique de l'infrastructure sous-jacente.
 Nestor écoute au micro, reconnaît un mot-clé, analyse l'intention de la phrase,
 commande les actionneurs réels via MQTT, répond à voix haute, et journalise chaque
 interaction dans MariaDB ainsi que dans un tableau de bord Node-RED.
+**Vidéo de démonstration (2-4 min) :** https://youtu.be/7C9RpHKh-IY
 
 ## 1. Architecture
 
@@ -478,7 +479,7 @@ Trois réglages du `Recognizer`, chacun pour une raison précise :
 
 Durées d'écoute : `timeout=5 s` (délai avant le premier son) et
 `phrase_time_limit=8 s` (durée maximale d'une phrase). Mesurées sur les phrases-types
-du § 2.5, dont la plus longue dure environ 3 secondes.
+du § 2.5, dont la plus longue — « Nestor, quelle température fait-il dans le salon ? » — dure 2,98 secondes.
 
 ---
 
