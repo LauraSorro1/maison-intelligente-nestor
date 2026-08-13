@@ -25,6 +25,7 @@ comme référence technique de l'infrastructure sous-jacente.
 Nestor écoute au micro, reconnaît un mot-clé, analyse l'intention de la phrase,
 commande les actionneurs réels via MQTT, répond à voix haute, et journalise chaque
 interaction dans MariaDB ainsi que dans un tableau de bord Node-RED.
+
 **Vidéo de démonstration (2-4 min) :** https://youtu.be/7C9RpHKh-IY
 
 ## 1. Architecture
