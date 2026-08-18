@@ -2,7 +2,7 @@
 from assistant.intentions import normaliser, tokeniser, analyser
 
 phrases = [
-    "Merlin, allume la Pompe de l'aquarium s'il te plaît !",
+    "Nestor, allume la Pompe de l'aquarium s'il te plaît !",
     "Éteins la lumière UV, merci.",
     "Peux-tu verrouiller la porte d'entrée ?",
     "Quelle température fait-il dans le salon ?",

@@ -124,26 +124,60 @@ le mot-clé : elles sont filtrées sans effet de bord.
 > `dynamic_energy_threshold` (§ 5.4) : leurs échecs étaient des captures tronquées,
 > pas des erreurs de reconnaissance. Celui de Merlin, lui, aurait persisté.
 
-### 2.3 Verbes reconnus
+### 2.3 Verbes reconnus — par leur racine (NLTK)
 
-Impératif **et** infinitif, pour accepter aussi bien « allume la pompe » que
-« peux-tu allumer la pompe » (la formule de politesse est retirée, le verbe reste à
-l'infinitif).
+L'analyse ne compare pas les jetons à une liste de formes conjuguées, mais à la
+**racine** du verbe, obtenue avec le `SnowballStemmer("french")` de NLTK. Une
+seule racine couvre alors toutes les formes régulières d'un même verbe :
 
-| Intention | Verbes |
-|---|---|
-| **ON** | allume, allumer, active, activer, demarre, demarrer, verrouille, verrouiller, barre, barrer |
-| **OFF** | eteins, eteint, eteindre, ferme, fermer, arrete, arreter, desactive, desactiver, deverrouille, deverrouiller, debarre, debarrer |
+```python
+racine.stem("allume") == racine.stem("allumez") == racine.stem("allumer") == "allum"
+```
 
-Les verbes sont comparés **après normalisation**, donc sans accents : la table
-ci-dessus reflète exactement le contenu de `VERBES_ON` et `VERBES_OFF`.
+C'est ce qui permet d'accepter « allume la pompe », « allumez la pompe »,
+« peux-tu allumer la pompe » et « j'aimerais que tu allumes la pompe » sans
+énumérer les quatre formes.
+
+| Intention | Racines | Formes couvertes |
+|---|---|---|
+| **ON** | `allum` | allume, allumes, allumez, allumer, allumé |
+| | `activ` | active, actives, activez, activer |
+| | `demarr` | démarre, démarres, démarrez, démarrer |
+| | `met` | mets, met (« mets la pompe en marche ») |
+| | `verrouill` | verrouille, verrouillez, verrouiller |
+| | `barr` | barre, barrez, barrer |
+| **OFF** | `etein`, `eteint`, `eteindr`, `eteign` | éteins, éteint, éteindre, éteignez |
+| | `ferm` | ferme, fermez, fermer |
+| | `arret` | arrête, arrêtez, arrêter |
+| | `desact`, `desactiv` | désactive, désactiver |
+| | `deverrouill` | déverrouille, déverrouillez, déverrouiller |
+| | `debarr` | débarre, débarrez, débarrer |
+| | `coup` | coupe, coupez, couper |
+| | `stopp` | stoppe, stoppez, stopper |
+
+> **Limite mesurée du stemmer.** La promesse « une racine par verbe » ne tient que
+> pour les verbes réguliers du premier groupe. `éteindre` est irrégulier et donne
+> **quatre** racines distinctes (`etein`, `eteint`, `eteindr`, `eteign`) ; `désactiver`
+> en donne deux (`desact`, `desactiv`). Ces racines sont donc toutes listées
+> explicitement. Le stemmer réduit le nombre de formes à écrire, il ne le ramène pas
+> à un par verbe.
+
+> **Le stemmer ne s'applique qu'aux verbes.** Les cibles (`ACTIONNEURS`, `CAPTEURS`)
+> restent comparées sur le jeton brut. Racinisées, « pompe » (`pomp`) et « pomme »
+> (`pomm`) resteraient distinctes, mais « pompier » deviendrait `pompi` — proche
+> assez pour inquiéter sans bénéfice : les noms d'objets n'ont pas de conjugaison,
+> la racinisation ne leur apporte rien.
 
 > **« ouvre » est volontairement exclu.** Appliqué à une serrure, le mot est ambigu
 > (ouvrir la porte ≠ déverrouiller). L'ambiguïté produirait une action non voulue
-> plutôt qu'un rejet propre. « ferme » reste dans `VERBES_OFF` car il sert aussi
+> plutôt qu'un rejet propre. « ferme » reste dans les racines OFF car il sert aussi
 > aux autres actionneurs — pour la serrure, « ferme la porte » est donc interprété
 > comme un déverrouillage. Préférer « verrouille » et « déverrouille », qui ne
 > souffrent d'aucune ambiguïté.
+
+> **Aucun téléchargement supplémentaire.** `SnowballStemmer` est un algorithme de
+> règles, pas un modèle : contrairement à `punkt_tab` (§ tokenisation), il ne
+> nécessite aucun `nltk.download()`. `requirements.txt` est donc inchangé.
 
 ### 2.4 Cibles reconnues
 

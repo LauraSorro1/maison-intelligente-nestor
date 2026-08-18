@@ -1,8 +1,8 @@
-import os
 import re
 import unicodedata
 
 import nltk
+from nltk.stem import SnowballStemmer
 
 # Le tokeniseur de NLTK a besoin du modele « punkt_tab » : on le telecharge
 # une seule fois (les executions suivantes le trouvent en cache local).
@@ -11,16 +11,29 @@ try:
 except LookupError:
     nltk.download("punkt_tab")
 
-# Verbes reconnus pour interagir avec un actionneur
-# (imperatif ET infinitif : « allume » / « peux-tu allumer »)
-VERBES_ON = {
-    "allume", "allumer", "active", "activer", "demarre", "demarrer",
-    "verrouille", "verrouiller", "barre", "barrer",
+# Racines des verbes reconnus (seance 12 : SnowballStemmer).
+# Une racine couvre toutes les formes regulieres d'un meme verbe :
+# racine.stem("allume") = racine.stem("allumez") = racine.stem("allumer") = "allum".
+# Les verbes irreguliers (eteindre) donnent plusieurs racines : elles sont
+# toutes listees, une par forme reellement prononcable.
+RACINES_ON = {
+    "allum",        # allume, allumes, allumez, allumer, allume
+    "activ",        # active, actives, activez, activer
+    "demarr",       # demarre, demarres, demarrez, demarrer
+    "met",          # mets, met  (« mets la pompe en marche »)
+    "verrouill",    # verrouille, verrouillez, verrouiller
+    "barr",         # barre, barrez, barrer
 }
 
-VERBES_OFF = {
-    "eteins", "eteint", "eteindre", "ferme", "fermer", "arrete", "arreter",
-    "desactive", "desactiver", "deverrouille", "deverrouiller", "debarre", "debarrer",
+RACINES_OFF = {
+    "etein", "eteint", "eteindr", "eteign",   # eteins / eteint / eteindre / eteignez
+    "ferm",         # ferme, fermez, fermer
+    "arret",        # arrete, arretez, arreter
+    "desact", "desactiv",                     # desactive / desactiver
+    "deverrouill",  # deverrouille, deverrouillez, deverrouiller
+    "debarr",       # debarre, debarrez, debarrer
+    "coup",         # coupe, coupez, couper
+    "stopp",        # stoppe, stoppez, stopper
 }
 
 # Noms d'actionneurs (et leurs surnoms) -> nom officiel de l'actionneur
@@ -68,12 +81,17 @@ def tokeniser(texte):
     return nltk.word_tokenize(texte, language="french")
 
 
+# Le stemmer francais est purement algorithmique : aucun telechargement.
+_racine = SnowballStemmer("french")
+
+
 def trouver_action(tokens):
-    """Cherche un verbe d'action (ON ou OFF) dans la phrase."""
+    """Cherche un verbe d'action (ON ou OFF) parmi les jetons, par leur racine."""
     for token in tokens:
-        if token in VERBES_ON:
+        r = _racine.stem(token)
+        if r in RACINES_ON:
             return "ON"
-        if token in VERBES_OFF:
+        if r in RACINES_OFF:
             return "OFF"
     return None
 
