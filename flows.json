@@ -156,25 +156,6 @@
         "groupType": "default"
     },
     {
-        "id": "2374f4411cc5761f",
-        "type": "ui-theme",
-        "name": "ui-base.label.theme 2",
-        "colors": {
-            "surface": "#ffffff",
-            "primary": "#0094CE",
-            "bgPage": "#eeeeee",
-            "groupBg": "#ffffff",
-            "groupOutline": "#cccccc"
-        },
-        "sizes": {
-            "density": "default",
-            "pagePadding": "12px",
-            "groupGap": "12px",
-            "groupBorderRadius": "4px",
-            "widgetGap": "12px"
-        }
-    },
-    {
         "id": "61f03a98e0c689f2",
         "type": "ui-page",
         "name": "Carte",
@@ -239,20 +220,6 @@
         "groupType": "default"
     },
     {
-        "id": "77980809d441372e",
-        "type": "ui-group",
-        "name": "Assistant vocal",
-        "page": "39a508d3615bc5f2",
-        "width": 6,
-        "height": 1,
-        "order": 1,
-        "showTitle": true,
-        "className": "",
-        "visible": "true",
-        "disabled": "false",
-        "groupType": "default"
-    },
-    {
         "id": "6a0c0812e795966e",
         "type": "ui-page",
         "name": "Démo",
@@ -291,7 +258,7 @@
     {
         "id": "3cad83f051b602f2",
         "type": "ui-group",
-        "name": "Capteurs",
+        "name": "Salon - Démo",
         "page": "6a0c0812e795966e",
         "width": 6,
         "height": 1,
@@ -344,7 +311,7 @@
         "rh": 0,
         "inputs": 0,
         "x": 160,
-        "y": 200,
+        "y": 260,
         "wires": [
             [
                 "db05a839facfe825"
@@ -365,7 +332,7 @@
         "rh": 0,
         "inputs": 0,
         "x": 160,
-        "y": 540,
+        "y": 600,
         "wires": [
             [
                 "560c3ba9da874b98"
@@ -505,7 +472,7 @@
         "styleGlow": false,
         "className": "",
         "x": 790,
-        "y": 200,
+        "y": 260,
         "wires": [
             []
         ]
@@ -523,7 +490,7 @@
         "finalize": "",
         "libs": [],
         "x": 460,
-        "y": 200,
+        "y": 260,
         "wires": [
             [
                 "6eabb9f4ca914d68"
@@ -543,7 +510,7 @@
         "finalize": "",
         "libs": [],
         "x": 440,
-        "y": 540,
+        "y": 600,
         "wires": [
             [
                 "cf73963a9d8bc2a0"
@@ -679,7 +646,7 @@
         "styleGlow": false,
         "className": "",
         "x": 760,
-        "y": 540,
+        "y": 600,
         "wires": [
             []
         ]
@@ -817,7 +784,7 @@
         "name": "=== SALON ===",
         "info": "",
         "x": 140,
-        "y": 140,
+        "y": 200,
         "wires": []
     },
     {
@@ -834,7 +801,7 @@
         "rh": 0,
         "inputs": 0,
         "x": 170,
-        "y": 280,
+        "y": 340,
         "wires": [
             [
                 "0812466a0ca2938b"
@@ -854,7 +821,7 @@
         "finalize": "",
         "libs": [],
         "x": 450,
-        "y": 280,
+        "y": 340,
         "wires": [
             [
                 "a599bceded11d4e6"
@@ -887,7 +854,7 @@
         "iconPosition": "left",
         "iconInnerPosition": "inside",
         "x": 780,
-        "y": 280,
+        "y": 340,
         "wires": [
             []
         ]
@@ -905,7 +872,7 @@
         "finalize": "",
         "libs": [],
         "x": 450,
-        "y": 460,
+        "y": 520,
         "wires": [
             [
                 "42be8f58e08e1335"
@@ -926,7 +893,7 @@
         "rh": 0,
         "inputs": 0,
         "x": 190,
-        "y": 460,
+        "y": 520,
         "wires": [
             [
                 "ebcee8ee8bc42828"
@@ -959,7 +926,7 @@
         "iconPosition": "left",
         "iconInnerPosition": "inside",
         "x": 800,
-        "y": 460,
+        "y": 520,
         "wires": [
             []
         ]
@@ -1288,8 +1255,8 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 200,
-        "y": 880,
+        "x": 180,
+        "y": 920,
         "wires": [
             [
                 "d7b702d065bd4e83"
@@ -1308,8 +1275,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 480,
-        "y": 880,
+        "x": 460,
+        "y": 920,
         "wires": [
             [
                 "4ece0c1016d5db59"
@@ -1323,7 +1290,7 @@
         "name": "=== MAISON ===",
         "info": "",
         "x": 150,
-        "y": 60,
+        "y": 120,
         "wires": []
     },
     {
@@ -1333,7 +1300,7 @@
         "name": "=== AQUARIUM ===",
         "info": "",
         "x": 160,
-        "y": 640,
+        "y": 700,
         "wires": []
     },
     {
@@ -1349,8 +1316,8 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 190,
-        "y": 800,
+        "x": 170,
+        "y": 840,
         "wires": [
             [
                 "108c3f39411ae17e"
@@ -1369,8 +1336,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 480,
-        "y": 800,
+        "x": 460,
+        "y": 840,
         "wires": [
             [
                 "fc3deb41ec1084f5"
@@ -1425,8 +1392,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 770,
-        "y": 800,
+        "x": 750,
+        "y": 840,
         "wires": [
             []
         ]
@@ -1479,8 +1446,8 @@
         "styleRounded": true,
         "styleGlow": false,
         "className": "",
-        "x": 770,
-        "y": 880,
+        "x": 750,
+        "y": 920,
         "wires": [
             []
         ]
@@ -1957,7 +1924,7 @@
         "z": "c6e83d46f1f7d35e",
         "name": "Température aquarium",
         "group": "3cad83f051b602f2",
-        "order": 2,
+        "order": 3,
         "value": "payload",
         "valueType": "msg",
         "width": 3,
@@ -2125,7 +2092,7 @@
         "group": "229295959ee2b5d4",
         "name": "Lumière UV",
         "label": "Lumière UV",
-        "order": 2,
+        "order": 6,
         "width": 0,
         "height": 0,
         "topic": "topic",
@@ -2207,7 +2174,7 @@
         "group": "229295959ee2b5d4",
         "name": "Serrure entrée",
         "label": "Serrure entrée",
-        "order": 3,
+        "order": 4,
         "width": 0,
         "height": 0,
         "topic": "topic",
@@ -2232,7 +2199,413 @@
         ]
     },
     {
-        "id": "84510ce898cfb001",
+        "id": "b6f846dde1010fa1",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/salon/temperature",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 170,
+        "y": 420,
+        "wires": [
+            [
+                "7a0634eff3fea212"
+            ]
+        ]
+    },
+    {
+        "id": "7a0634eff3fea212",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 420,
+        "wires": [
+            [
+                "b10e5ab805956e41"
+            ]
+        ]
+    },
+    {
+        "id": "b10e5ab805956e41",
+        "type": "ui-gauge",
+        "z": "c6e83d46f1f7d35e",
+        "name": "Température salon",
+        "group": "83519395dbfaccaa",
+        "order": 2,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Température salon",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "°C",
+        "icon": "thermostat",
+        "prefix": "",
+        "suffix": "°C",
+        "segments": [
+            {
+                "from": "18",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "23",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "26",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": "16",
+        "max": "26",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 790,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "75a0affb5e8b5f28",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/salon/aquarium/temperature",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 200,
+        "y": 760,
+        "wires": [
+            [
+                "1d919948f9cc067e"
+            ]
+        ]
+    },
+    {
+        "id": "1d919948f9cc067e",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire valeur",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\nmsg.payload = data.valeur;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 760,
+        "wires": [
+            [
+                "e9fd8e3d2a789ba4"
+            ]
+        ]
+    },
+    {
+        "id": "e9fd8e3d2a789ba4",
+        "type": "ui-gauge",
+        "z": "c6e83d46f1f7d35e",
+        "name": "Température aquarium",
+        "group": "1e6edd0a98a26649",
+        "order": 4,
+        "value": "payload",
+        "valueType": "msg",
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Température aquarium",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "°C",
+        "icon": "thermostat",
+        "prefix": "",
+        "suffix": "°C",
+        "segments": [
+            {
+                "from": "18",
+                "color": "#5cd65c",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "24",
+                "color": "#ffc800",
+                "text": "",
+                "textType": "label"
+            },
+            {
+                "from": "26",
+                "color": "#ea5353",
+                "text": "",
+                "textType": "label"
+            }
+        ],
+        "min": "16",
+        "max": "28",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 800,
+        "y": 760,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "313d9bc942b6460b",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 1000,
+        "wires": [
+            [
+                "6b1ea6cca33a0ac9"
+            ]
+        ]
+    },
+    {
+        "id": "cfd76819a820c5ee",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/salon/aquarium/pompe/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 220,
+        "y": 1000,
+        "wires": [
+            [
+                "313d9bc942b6460b"
+            ]
+        ]
+    },
+    {
+        "id": "6b1ea6cca33a0ac9",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "1e6edd0a98a26649",
+        "name": "Pompe aquarium",
+        "label": "Pompe aquarium",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 810,
+        "y": 1000,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7d7d65da0e6c32c9",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 1080,
+        "wires": [
+            [
+                "3769823a69fa48b7"
+            ]
+        ]
+    },
+    {
+        "id": "8d738e4674f7714b",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/salon/aquarium/uv/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 210,
+        "y": 1080,
+        "wires": [
+            [
+                "7d7d65da0e6c32c9"
+            ]
+        ]
+    },
+    {
+        "id": "3769823a69fa48b7",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "1e6edd0a98a26649",
+        "name": "Lumière UV",
+        "label": "Lumière UV",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 790,
+        "y": 1080,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6ede63e7413389a4",
+        "type": "mqtt in",
+        "z": "c6e83d46f1f7d35e",
+        "name": "",
+        "topic": "maison/entree/serrure/etat",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "f963c0bec8f8e280",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 210,
+        "y": 1480,
+        "wires": [
+            [
+                "407bb7c66a5f01dd"
+            ]
+        ]
+    },
+    {
+        "id": "407bb7c66a5f01dd",
+        "type": "function",
+        "z": "c6e83d46f1f7d35e",
+        "name": "extraire etat",
+        "func": "let data = msg.payload;\nif (typeof data === \"string\") data = JSON.parse(data);\nmsg.payload = data.etat;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 1480,
+        "wires": [
+            [
+                "0d1c5659e03e1779"
+            ]
+        ]
+    },
+    {
+        "id": "0d1c5659e03e1779",
+        "type": "ui-text-input",
+        "z": "c6e83d46f1f7d35e",
+        "group": "a4201dc16b913486",
+        "name": "Serrure entrée",
+        "label": "Serrure entrée",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "topic": "topic",
+        "topicType": "msg",
+        "mode": "text",
+        "tooltip": "",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "clearable": false,
+        "sendOnClear": false,
+        "icon": "",
+        "iconPosition": "left",
+        "iconInnerPosition": "inside",
+        "x": 760,
+        "y": 1480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6d74403803c98064",
         "type": "global-config",
         "env": [],
         "modules": {
