@@ -7,8 +7,6 @@ tableau de bord reste synchronisé.
 """
 import json
 
-import paho.mqtt.client as mqtt
-
 import config
 
 

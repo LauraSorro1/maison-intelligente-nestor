@@ -1,5 +1,5 @@
 """Petit banc d'essai pour l'analyse des intentions (usage local, pas remis)."""
-from assistant.intentions import normaliser, tokeniser, analyser
+from assistant.intentions import analyser
 
 phrases = [
     "Nestor, allume la Pompe de l'aquarium s'il te plaît !",

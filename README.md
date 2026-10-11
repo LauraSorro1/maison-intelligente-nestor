@@ -1,7 +1,19 @@
 # Maison intelligente simulée + assistant vocal « Nestor »
 
-Cours **420-315-AH — Développement d'objets intelligents**
-Étudiante : **Laura Sorro** — Collège Ahuntsic, session été 2026
+Système domotique simulé en Python : douze capteurs et neuf actionneurs échangent
+par MQTT, un contrôleur applique des règles d'automatisation, et un assistant vocal
+francophone, « Nestor », reconnaît des commandes parlées, pilote les actionneurs et
+journalise chaque interaction dans une base MariaDB.
+
+**Technologies :** Python · MQTT (Mosquitto, paho-mqtt) · SpeechRecognition · pyttsx3 ·
+NLTK · expressions régulières · MariaDB · Node-RED
+
+**Vidéo de démonstration (2-4 min) :** https://youtu.be/7C9RpHKh-IY
+
+**Contexte :** projet réalisé par **Laura Sorro** dans le cours 420-315-AH,
+Développement d'objets intelligents (AEC Internet des objets et intelligence
+artificielle, Collège Ahuntsic, été 2026), à partir d'un code de départ fourni par
+l'enseignante, Fatima El-Fouladi. Publié avec son autorisation.
 
 ---
 
@@ -363,7 +375,7 @@ parle « verrouille/deverrouille », les autres « allume/eteint ».
 | `maison/entree/serrure/etat` | `entree_serrure` |
 
 Ces sujets sont publiés par les actionneurs avec `retain=True` (choix du Projet 1,
-§ Bonus #4). Conséquence directe : **le courtier livre l'état courant dès la
+§ Fonctions supplémentaires, robustesse MQTT). Conséquence directe : **le courtier livre l'état courant dès la
 connexion de l'assistant**, sans attendre le prochain changement. Nestor connaît donc
 l'état de ses trois actionneurs avant même la première commande.
 
@@ -602,7 +614,7 @@ SELECT * FROM maison.journal_reponses  ORDER BY horodatage DESC LIMIT 10;
 
 ---
 
-## 8. Bugs du squelette trouvés et corrigés
+## 8. Corrections apportées au code de départ
 
 | Fichier | Problème | Correction |
 |---|---|---|
@@ -839,29 +851,29 @@ déconnexion brutale :
 
 ---
 
-## Bonus
+## Fonctions supplémentaires
 
-### #2 — Carte maison en temps réel (+5%)
+### Carte de la maison en temps réel
 
 Une deuxième page Node-RED affiche un plan de la maison en HTML/CSS. La couleur de la
 bordure change selon l'état : 🟢 normal, 🟡 attention (thermopompe active), 🔴 alerte
 (mouvement détecté). Les données proviennent d'un abonnement `maison/#` via un nœud
 `function` qui maintient l'état global en mémoire de flux.
 
-### #4 — Robustesse MQTT (+5%)
+### Robustesse MQTT
 
 - **QoS 0** pour les capteurs : publication fréquente (2 s), une valeur perdue est sans conséquence
 - **QoS 2** pour les abonnements des actionneurs : une commande doit être exécutée exactement une fois
 - **retain=True** sur tous les sujets capteurs et états actionneurs : le tableau de bord affiche une valeur dès l'ouverture — et l'assistant vocal connaît l'état de ses actionneurs dès sa connexion (§ 3.4)
 - **LWT** sur chaque capteur : en cas de déconnexion brutale, le courtier publie automatiquement `{"etat":"hors-ligne"}` sur le sujet `/sante`
 
-### Bonus retirés
+### Pistes écartées
 
-**#1 — Capteur de vision OpenCV :** la bibliothèque ne permettait pas d'afficher le
+**Capteur de vision OpenCV :** la bibliothèque ne permettait pas d'afficher le
 flux vidéo dans le tableau de bord Node-RED. Sans visualisation, la valeur ajoutée par
 rapport à un capteur simulé était insuffisante.
 
-**#3 — Alertes et notifications :** les données étant simulées aléatoirement, les
+**Alertes et notifications :** les données étant simulées aléatoirement, les
 alertes se déclenchaient continuellement sans refléter une situation réelle. La
 persistance MariaDB du Projet 2 rend désormais ce type d'analyse pertinent.
 
@@ -871,7 +883,7 @@ persistance MariaDB du Projet 2 rend désormais ce type d'analyse pertinent.
 ## Structure du dépôt
 
 ```
-projet1-420-315-E26/
+maison-intelligente-nestor/
 ├── .env                                Secrets locaux — NON versionné
 ├── .env.exemple                        Modèle à copier
 ├── .gitignore
@@ -896,7 +908,7 @@ projet1-420-315-E26/
 │   ├── capteur_salon_luminosite.py
 │   ├── capteur_salon_humidite.py
 │   ├── capteur_aquarium_temperature.py
-│   ├── capteur_aquarium_ph.py          Capteur pH (ajouté par la prof)
+│   ├── capteur_aquarium_ph.py          Capteur pH (fourni avec le code de départ)
 │   ├── capteur_aquarium_niveau.py
 │   ├── capteur_entree_mouvement.py
 │   ├── capteur_entree_porte.py
@@ -905,7 +917,7 @@ projet1-420-315-E26/
 │   ├── capteur_garage_vehicule.py
 │   ├── capteur_garage_barcode.py       Lecteur de code-barres simulé
 │   └── exemples/
-│       └── capteur_aquarium.py         Exemple fourni par la prof
+│       └── capteur_aquarium.py         Exemple fourni avec le code de départ
 ├── actionneurs/                        ── PROJET 1 ──
 │   ├── __init__.py
 │   ├── base_actionneur.py              Classe de base Actionneur (QoS 2, retain)
